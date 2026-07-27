@@ -136,20 +136,8 @@ const indianLanguages = [
 import { translations } from './translations';
 
 export const AppProvider = ({ children }) => {
-  // Config state
-  const [apiBase, setApiBase] = useState(() => {
-    const saved = localStorage.getItem('fittrack_api_base');
-    if (saved) return saved;
-    // Injected at build time by hosting platforms like Render
-    if (import.meta.env.VITE_API_BASE) {
-      return import.meta.env.VITE_API_BASE;
-    }
-    // Capacitor/mobile webview fallback (runs on capacitor:// or http://localhost with no dev port)
-    if (window.location.origin.startsWith('capacitor://') || window.location.origin === 'http://localhost') {
-      return 'http://10.0.2.2:3000/api';
-    }
-    return '/api';
-  });
+  // Config state (Hardcoded to Production Render URL)
+  const apiBase = import.meta.env.VITE_API_BASE || 'https://onlygains-backend.onrender.com/api';
 
   const [lang, setLang] = useState(() => localStorage.getItem('fittrack_language') || 'en');
   const [activeTab, setActiveTab] = useState('home');
@@ -545,10 +533,6 @@ export const AppProvider = ({ children }) => {
       toast,
       showToast,
       apiBase,
-      setApiBase: (url) => {
-        setApiBase(url);
-        localStorage.setItem('fittrack_api_base', url);
-      },
       syncStatus,
       setSyncStatus,
 

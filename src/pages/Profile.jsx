@@ -6,7 +6,7 @@ export const Profile = () => {
   const { 
     currentUser, loginUser, userProfile, setUserProfile, goalConfigs,
     indianLanguages, lang, setLang, translations, applyTheme, showToast,
-    apiBase, setApiBase
+    apiBase
   } = useApp();
 
   const dict = translations[lang] || translations.en;
@@ -26,7 +26,6 @@ export const Profile = () => {
 
   // App settings states
   const [activeTheme, setActiveTheme] = useState(() => localStorage.getItem('fittrack_theme') || 'system');
-  const [customApiUrl, setCustomApiUrl] = useState(apiBase);
   const [reminders, setReminders] = useState(() => localStorage.getItem('fittrack_reminders') !== 'false');
   const [waterAlerts, setWaterAlerts] = useState(() => localStorage.getItem('fittrack_water_alerts') !== 'false');
 
@@ -136,10 +135,7 @@ export const Profile = () => {
     showToast(`Theme changed to ${newTheme}`, 'success');
   };
 
-  const handleUpdateApiUrl = () => {
-    setApiBase(customApiUrl);
-    showToast('API base URL updated', 'success');
-  };
+
 
   const handleReminderToggle = () => {
     const val = !reminders;
@@ -412,25 +408,12 @@ export const Profile = () => {
             <ShieldCheck className="w-4 h-4 text-emerald-500" /> Support & Advanced Settings
           </h3>
           
-          <div className="space-y-2.5">
-            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block">API Endpoint Base</span>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={customApiUrl}
-                onChange={(e) => setCustomApiUrl(e.target.value)}
-                className="flex-grow rounded-2xl bg-slate-900 border border-slate-800 px-3.5 py-3 text-xs text-slate-200"
-              />
-              <button 
-                onClick={handleUpdateApiUrl}
-                className="bg-slate-900 hover:bg-slate-850 text-slate-250 border border-slate-800 rounded-2xl px-4 py-3 text-xs font-bold transition flex items-center justify-center"
-              >
-                Save
-              </button>
+          <div className="space-y-2.5 text-xs">
+            <span className="text-[10px] text-slate-550 uppercase font-bold tracking-wider block">Backend API Status</span>
+            <div className="bg-slate-950/60 p-3 rounded-2xl border border-slate-850 font-mono text-[10px] text-emerald-500 flex items-center justify-between shadow-inner">
+              <span>https://onlygains-backend.onrender.com/api</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#ccff00]"></span>
             </div>
-            <p className="text-[9px] text-slate-550 leading-relaxed font-medium">
-              If running FitTrack on a mobile device or emulator, update this URL to your remote hosting server (e.g. Render) to enable cross-device databases sync.
-            </p>
           </div>
 
           <div className="flex flex-col gap-2 pt-4 border-t border-slate-850 text-xs">

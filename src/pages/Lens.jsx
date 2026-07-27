@@ -258,11 +258,14 @@ export const Lens = () => {
         <p className="text-xs text-slate-500 text-left mb-6 leading-relaxed">Point your camera or upload a photo to identify nutrients instantly.</p>
 
         {/* Viewport Frame */}
-        <div className="relative w-full aspect-[9/16] sm:aspect-[3/4] max-h-[550px] rounded-[24px] border border-slate-800 bg-slate-950 flex flex-col items-center justify-center overflow-hidden shadow-2xl">
+        <div className={isCameraActive 
+          ? "fixed inset-0 bg-black z-50 flex flex-col items-center justify-center overflow-hidden"
+          : "relative w-full aspect-[9/16] sm:aspect-[3/4] max-h-[550px] rounded-[24px] border border-slate-800 bg-slate-950 flex flex-col items-center justify-center overflow-hidden shadow-2xl"
+        }>
           
           {/* Top Camera Header bar */}
           {isCameraActive && (
-            <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-20 bg-gradient-to-b from-black/75 to-transparent text-slate-100">
+            <div className="absolute top-0 left-0 right-0 p-4 pt-12 sm:pt-6 flex items-center justify-between z-20 bg-gradient-to-b from-black/75 to-transparent text-slate-100">
               <button 
                 onClick={stopCamera} 
                 className="bg-black/50 hover:bg-black/75 p-2.5 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition"
@@ -285,6 +288,7 @@ export const Lens = () => {
               ref={videoRef} 
               autoPlay 
               playsInline 
+              muted
               className="w-full h-full object-cover"
             />
           )}
@@ -340,7 +344,7 @@ export const Lens = () => {
 
           {/* Bottom Tabs selector pills */}
           {isCameraActive && (
-            <div className="absolute bottom-24 left-0 right-0 flex justify-center z-20">
+            <div className="absolute bottom-28 left-0 right-0 flex justify-center z-20">
               <div className="bg-black/65 backdrop-blur-md border border-white/10 rounded-full p-1 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider">
                 <button className="bg-white text-slate-950 px-4 py-2 rounded-full flex items-center gap-1 transition-all">
                   <Camera className="w-3.5 h-3.5" /> AI Camera
@@ -363,7 +367,7 @@ export const Lens = () => {
 
           {/* Bottom Shutter Capture Trigger Button */}
           {isCameraActive && (
-            <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center z-20">
+            <div className="absolute bottom-10 left-0 right-0 flex justify-center items-center z-20">
               <button 
                 onClick={captureSnapshot} 
                 className="w-16 h-16 rounded-full border-4 border-white bg-transparent flex items-center justify-center p-1 hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.4)]"
