@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { Trash2 } from 'lucide-react';
+import { Trash2, AlertTriangle, Scale, Calendar, LineChart, Flame } from 'lucide-react';
 import { Chart, registerables } from 'chart.js';
 
 // Register Chart.js components
@@ -65,6 +65,23 @@ export const Progress = () => {
   useEffect(() => {
     const data = getLastSevenData();
 
+    const chartOptions = {
+      maintainAspectRatio: false,
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { 
+          beginAtZero: true, 
+          grid: { color: 'rgba(255, 255, 255, 0.03)' }, 
+          ticks: { color: '#7e7e7e', font: { size: 9, weight: 'bold' } } 
+        },
+        x: { 
+          grid: { display: false }, 
+          ticks: { color: '#7e7e7e', font: { size: 9, weight: 'bold' } } 
+        }
+      }
+    };
+
     // 1. Calories Chart
     if (calChartRef.current) {
       if (calChartInst.current) calChartInst.current.destroy();
@@ -74,21 +91,13 @@ export const Progress = () => {
           labels: data.labels, 
           datasets: [{ 
             data: data.cals, 
-            backgroundColor: 'rgba(16, 185, 129, 0.25)', 
-            borderColor: '#10b981', 
+            backgroundColor: 'rgba(204, 255, 0, 0.15)', 
+            borderColor: '#ccff00', 
             borderWidth: 1.5, 
-            borderRadius: 6 
+            borderRadius: 8
           }] 
         },
-        options: { 
-          maintainAspectRatio: false, 
-          responsive: true, 
-          plugins: { legend: { display: false } }, 
-          scales: { 
-            y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,.09)' }, ticks: { color: '#94a3b8' } }, 
-            x: { grid: { display: false }, ticks: { color: '#94a3b8' } } 
-          } 
-        }
+        options: chartOptions
       });
     }
 
@@ -101,21 +110,13 @@ export const Progress = () => {
           labels: data.labels, 
           datasets: [{ 
             data: data.proteins, 
-            backgroundColor: 'rgba(59, 130, 246, 0.25)', 
-            borderColor: '#3b82f6', 
+            backgroundColor: 'rgba(56, 189, 248, 0.15)', 
+            borderColor: '#38bdf8', 
             borderWidth: 1.5, 
-            borderRadius: 6 
+            borderRadius: 8
           }] 
         },
-        options: { 
-          maintainAspectRatio: false, 
-          responsive: true, 
-          plugins: { legend: { display: false } }, 
-          scales: { 
-            y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,.09)' }, ticks: { color: '#94a3b8' } }, 
-            x: { grid: { display: false }, ticks: { color: '#94a3b8' } } 
-          } 
-        }
+        options: chartOptions
       });
     }
 
@@ -128,21 +129,13 @@ export const Progress = () => {
           labels: data.labels,
           datasets: [{
             data: data.waters,
-            backgroundColor: 'rgba(14, 165, 233, 0.25)',
-            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(204, 255, 0, 0.12)',
+            borderColor: '#ccff00',
             borderWidth: 1.5,
-            borderRadius: 6
+            borderRadius: 8
           }]
         },
-        options: {
-          maintainAspectRatio: false,
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,.09)' }, ticks: { color: '#94a3b8' } },
-            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-          }
-        }
+        options: chartOptions
       });
     }
 
@@ -155,20 +148,18 @@ export const Progress = () => {
           labels: data.labels,
           datasets: [{
             data: data.weights,
-            backgroundColor: 'rgba(168, 85, 247, 0.1)',
-            borderColor: '#a855f7',
+            backgroundColor: 'rgba(204, 255, 0, 0.04)',
+            borderColor: '#ccff00',
             borderWidth: 2,
-            tension: 0.3,
+            tension: 0.35,
             fill: true
           }]
         },
         options: {
-          maintainAspectRatio: false,
-          responsive: true,
-          plugins: { legend: { display: false } },
+          ...chartOptions,
           scales: {
-            y: { beginAtZero: false, grid: { color: 'rgba(148,163,184,.09)' }, ticks: { color: '#94a3b8' } },
-            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            y: { ...chartOptions.scales.y, beginAtZero: false },
+            x: chartOptions.scales.x
           }
         }
       });
@@ -192,10 +183,9 @@ export const Progress = () => {
     const prevWeight = userProfile ? userProfile.weight : 70;
     const diff = prevWeight - val;
 
-    // Trigger deviation warning modal if difference is >= 15 kg
     if (Math.abs(diff) >= 15) {
       setWarningMsg(
-        `Woah! Did you ${diff > 0 ? 'lose' : 'gain'} like ${Math.abs(diff).toFixed(1)} kgs lol? That seems impossible and not good for your BMI! Are you sure you want to record ${val} kg?`
+        `Woah! Did you ${diff > 0 ? 'lose' : 'gain'} like ${Math.abs(diff).toFixed(1)} kgs? That is a large biometrics deviation! Are you sure you want to record ${val} kg?`
       );
       setPendingWeight(val);
       setIsWarningOpen(true);
@@ -238,22 +228,28 @@ export const Progress = () => {
   };
 
   return (
-    <div id="panelProgress" className="tab-panel space-y-6 max-w-[1600px] mx-auto">
+    <div id="panelProgress" className="tab-panel space-y-6 max-w-[1600px] mx-auto slide-up pb-12">
+      
       {/* Calendar History Snapper */}
-      <div className="glass rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold flex items-center gap-2 text-slate-100">
-            <span data-i18n="calendar_history">{dict.calendar_history}</span>
-            <span id="streakBadge" className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30 font-semibold shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+      <div className="glass p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Calendar className="w-5 h-5 text-emerald-500" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-slate-200" data-i18n="calendar_history">
+              {dict.calendar_history}
+            </h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <span id="streakBadge" className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full border border-emerald-500/20 shadow-[0_0_10px_rgba(204,255,0,0.1)]">
               🔥 {currentStreak} Day Streak
             </span>
-          </h2>
-          <button 
-            onClick={() => setViewDateKey(todayKey)} 
-            className="text-xs font-semibold text-slate-400 hover:text-emerald-400 transition bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700"
-          >
-            Today
-          </button>
+            <button 
+              onClick={() => setViewDateKey(todayKey)} 
+              className="text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-emerald-500 transition bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl"
+            >
+              Today
+            </button>
+          </div>
         </div>
         <div 
           ref={calendarRef} 
@@ -263,19 +259,19 @@ export const Progress = () => {
             <button
               key={day.dateStr}
               onClick={() => setViewDateKey(day.dateStr)}
-              className={`flex-shrink-0 w-16 h-20 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 snap-center ${
+              className={`flex-shrink-0 w-16 h-20 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 snap-center ${
                 day.isSelected 
-                  ? 'selected-date bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
-                  : 'bg-slate-900/60 border-slate-700/50 hover:border-emerald-500/50 hover:bg-slate-800 text-slate-400'
+                  ? 'selected-date border-emerald-500 bg-emerald-500/10 text-emerald-300 shadow-[0_0_15px_rgba(204,255,0,0.15)] font-black scale-102'
+                  : 'bg-slate-900/40 border-slate-850 hover:border-emerald-500/30 hover:bg-slate-900 text-slate-500'
               }`}
             >
-              <span className={`text-[10px] uppercase font-bold tracking-wider ${day.isSelected ? 'text-emerald-400/80' : 'text-slate-500'}`}>
+              <span className={`text-[9px] uppercase font-bold tracking-widest ${day.isSelected ? 'text-emerald-400' : 'text-slate-600'}`}>
                 {day.dayOfWeek}
               </span>
-              <span className={`text-lg font-black ${day.isToday && !day.isSelected ? 'text-white' : ''}`}>
+              <span className={`text-base font-extrabold ${day.isToday && !day.isSelected ? 'text-white' : ''}`}>
                 {day.dayOfMonth}
               </span>
-              <div className={`h-1.5 w-1.5 rounded-full ${day.hasData ? 'bg-emerald-400 neon' : 'bg-transparent'}`}></div>
+              <div className={`h-1.5 w-1.5 rounded-full mt-1 ${day.hasData ? 'bg-emerald-500 shadow-[0_0_8px_#ccff00]' : 'bg-transparent'}`}></div>
             </button>
           ))}
         </div>
@@ -283,10 +279,13 @@ export const Progress = () => {
 
       {/* Weight Tracking */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="glass rounded-2xl p-5 flex flex-col justify-between">
+        <div className="glass p-6 flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2" data-i18n="log_weight">{dict.log_weight}</h3>
-            <p className="text-xs text-slate-500 mb-4" data-i18n="weight_desc">{dict.weight_desc}</p>
+            <div className="flex items-center gap-2 mb-2 text-slate-400">
+              <Scale className="w-4 h-4 text-emerald-500" />
+              <h3 className="text-xs font-black uppercase tracking-wider" data-i18n="log_weight">{dict.log_weight}</h3>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed mb-6" data-i18n="weight_desc">{dict.weight_desc}</p>
           </div>
           <div className="space-y-4">
             <div className="relative">
@@ -296,13 +295,13 @@ export const Progress = () => {
                 placeholder="e.g. 72.5" 
                 value={weightVal}
                 onChange={(e) => setWeightVal(e.target.value)}
-                className="w-full rounded-xl bg-slate-950/80 border border-slate-800 px-4 py-3 text-slate-100 pr-12 text-sm placeholder-slate-600" 
+                className="w-full rounded-2xl bg-slate-900 border border-slate-800 px-4 py-3 text-white pr-12 text-xs placeholder-slate-650" 
               />
-              <span className="absolute right-4 top-3.5 text-xs text-slate-400 font-bold">kg</span>
+              <span className="absolute right-4 top-3 text-xs text-slate-500 font-bold uppercase tracking-wider">kg</span>
             </div>
             <button 
               onClick={handleRecordWeight} 
-              className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 text-sm transition neon"
+              className="w-full rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black py-3.5 text-xs transition neon uppercase tracking-wider"
               data-i18n="record_weight"
             >
               {dict.record_weight}
@@ -311,23 +310,26 @@ export const Progress = () => {
         </div>
 
         {/* Weight Log History List */}
-        <div className="glass rounded-2xl p-5 lg:col-span-2">
-          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4" data-i18n="weight_log">{dict.weight_log}</h3>
-          <div className="max-h-40 overflow-y-auto space-y-2 thin-scroll text-xs pr-1">
+        <div className="glass p-6 lg:col-span-2">
+          <div className="flex items-center gap-2 mb-4 text-slate-400">
+            <LineChart className="w-4 h-4 text-emerald-500" />
+            <h3 className="text-xs font-black uppercase tracking-wider" data-i18n="weight_log">{dict.weight_log}</h3>
+          </div>
+          <div className="max-h-44 overflow-y-auto space-y-2.5 thin-scroll text-xs pr-1">
             {weightHistory.length === 0 ? (
-              <p className="text-slate-500 italic py-4 text-center">No weight entries logged yet</p>
+              <p className="text-slate-500 italic py-8 text-center">No weight logs logged yet</p>
             ) : (
               weightHistory.map((entry) => (
-                <div key={entry.timestamp} className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-200">{entry.weight} kg</span>
-                    <span className="text-slate-500 text-[10px]">{entry.date}</span>
+                <div key={entry.timestamp} className="bg-slate-900/30 border border-slate-850 rounded-2xl p-3.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="font-extrabold text-xs text-slate-200">{entry.weight} kg</span>
+                    <span className="text-slate-550 text-[10px] font-medium">{entry.date}</span>
                   </div>
                   <button 
                     onClick={() => deleteWeightEntry(entry.timestamp)} 
-                    className="text-slate-600 hover:text-red-400 p-1.5 transition rounded-lg hover:bg-red-500/5"
+                    className="text-slate-500 hover:text-red-400 p-2 transition rounded-xl hover:bg-red-500/5"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               ))
@@ -338,30 +340,35 @@ export const Progress = () => {
 
       {/* Weekly Trend Charts */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="glass rounded-2xl p-4 flex flex-col">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Weekly Calories</h3>
-          <div className="h-44"><canvas ref={calChartRef}></canvas></div>
+        <div className="glass p-5 flex flex-col bg-slate-900/20">
+          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Weekly Calories</h3>
+          <div className="h-48"><canvas ref={calChartRef}></canvas></div>
         </div>
-        <div className="glass rounded-2xl p-4 flex flex-col">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Weekly Protein</h3>
-          <div className="h-44"><canvas ref={proteinChartRef}></canvas></div>
+        <div className="glass p-5 flex flex-col bg-slate-900/20">
+          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Weekly Protein</h3>
+          <div className="h-48"><canvas ref={proteinChartRef}></canvas></div>
         </div>
-        <div className="glass rounded-2xl p-4 flex flex-col">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Weekly Water Intake</h3>
-          <div className="h-44"><canvas ref={waterChartRef}></canvas></div>
+        <div className="glass p-5 flex flex-col bg-slate-900/20">
+          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Weekly Water Intake</h3>
+          <div className="h-48"><canvas ref={waterChartRef}></canvas></div>
         </div>
-        <div className="glass rounded-2xl p-4 flex flex-col">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Weight History Chart</h3>
-          <div className="h-44"><canvas ref={weightChartRef}></canvas></div>
+        <div className="glass p-5 flex flex-col bg-slate-900/20">
+          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Weight History Chart</h3>
+          <div className="h-48"><canvas ref={weightChartRef}></canvas></div>
         </div>
       </div>
 
       {/* Weight Deviation Confirmation Dialog */}
       {isWarningOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <div className="w-full max-w-sm glass rounded-2xl p-5 sm:p-6 slide-up text-left">
-            <h3 className="text-base font-bold text-amber-400 mb-2">Confirm Large Weight Deviation</h3>
-            <p className="text-xs text-slate-400 mb-5 leading-relaxed">{warningMsg}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm glass p-6 slide-up text-left">
+            
+            <div className="flex items-center gap-2 mb-2 text-amber-500">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              <h3 className="text-xs font-black uppercase tracking-wider">Confirm Weight Change</h3>
+            </div>
+            
+            <p className="text-xs text-slate-400 mb-6 leading-relaxed">{warningMsg}</p>
             
             <div className="flex gap-3">
               <button 
@@ -370,15 +377,15 @@ export const Progress = () => {
                   setWeightVal('');
                   setPendingWeight(null);
                 }} 
-                className="flex-1 rounded-xl border border-slate-700 bg-slate-900/55 py-2.5 text-xs text-slate-300 font-bold hover:bg-slate-800 transition"
+                className="flex-1 rounded-2xl border border-slate-850 bg-slate-900/80 py-3 text-xs text-slate-350 font-black uppercase tracking-wider hover:bg-slate-800 transition"
               >
                 Cancel
               </button>
               <button 
                 onClick={confirmPendingWeight}
-                className="flex-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 py-2.5 text-xs font-bold transition shadow-[0_0_15px_rgba(245,158,11,0.3)]"
+                className="flex-1 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 py-3 text-xs font-black transition shadow-[0_0_15px_rgba(245,158,11,0.25)] uppercase tracking-wider"
               >
-                Yes, Record
+                Record Log
               </button>
             </div>
           </div>

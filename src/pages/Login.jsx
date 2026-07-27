@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
+import { Activity, Mail, Key, ShieldAlert, ArrowRight, Sparkles } from 'lucide-react';
 
 export const Login = () => {
   const { loginUser, apiBase, showToast } = useApp();
@@ -105,39 +106,43 @@ export const Login = () => {
           });
         }
       } catch (err) {
-        console.error('Google Sign-In render error:', err);
+        console.error('Google button render failed:', err);
       }
     }
-  }, [isRealGoogle, googleClientId, activeTab]);
+  }, [isRealGoogle, googleClientId]);
 
   const handleCredentialsLogin = (e) => {
     e.preventDefault();
-    if (!email) return;
-    const namePart = email.split('@')[0];
-    const name = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    if (!email || !password) return;
     
     const user = {
       id: 'user-' + btoa(email).substring(0, 12),
-      name,
-      email,
-      phone: '',
+      name: email.split('@')[0],
+      email: email,
+      phone: localStorage.getItem('fittrack_phone') || '',
       color: 'emerald',
       picture: ''
     };
     loginUser(user);
-    showToast(`Welcome back, ${name}!`, 'success');
+    showToast(`Logged in successfully!`, 'success');
   };
 
   const handleSignUpCredentials = (e) => {
     e.preventDefault();
-    if (!signUpEmail) return;
-    const namePart = signUpEmail.split('@')[0];
-    const name = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-    
+    const mail = signUpEmail.trim();
+    const pass = signUpPassword.trim();
+    if (!mail || !pass) return;
+
+    if (pass.length < 4) {
+      showToast('Password must be at least 4 characters long', 'error');
+      return;
+    }
+
+    const name = mail.split('@')[0];
     const user = {
-      id: 'user-' + btoa(signUpEmail).substring(0, 12),
-      name,
-      email: signUpEmail,
+      id: 'user-' + btoa(mail).substring(0, 12),
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      email: mail,
       phone: '',
       color: 'emerald',
       picture: ''
@@ -174,25 +179,37 @@ export const Login = () => {
   };
 
   return (
-    <section id="loginPage" className="min-h-screen flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md glass rounded-2xl p-6 sm:p-8 slide-up text-center">
-        <p className="text-emerald-400 font-bold tracking-[.25em] text-xs uppercase">muscle building nutrition</p>
-        <h1 className="text-3xl sm:text-4xl font-black mt-3 mb-4 text-slate-100 font-serif-editorial italic">FitTrack Pro</h1>
+    <section id="loginPage" className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden bg-slate-950">
+      
+      {/* Visual background gradient accents */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-emerald-500/10 blur-[100px] pointer-events-none z-0"></div>
+
+      <div className="w-full max-w-[420px] glass p-8 sm:p-10 slide-up text-center relative z-10">
         
-        {/* Tab Buttons */}
-        <div className="flex bg-slate-900/60 p-1.5 rounded-xl border border-slate-800 mb-6">
+        {/* Splash/Intro Brand Header */}
+        <div className="mb-8">
+          <div className="w-14 h-14 mx-auto rounded-[20px] bg-slate-900 border border-slate-800 flex items-center justify-center mb-5 shadow-[0_4px_20px_rgba(204,255,0,0.1)]">
+            <Activity className="w-7 h-7 text-emerald-500" />
+          </div>
+          <p className="text-emerald-500 font-brand-serif italic tracking-widest text-[11px] uppercase mb-2">FitTrack Pro</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight leading-tight">Simply, Snap a pic.</h1>
+          <p className="text-slate-500 text-xs mt-2 max-w-xs mx-auto">AI-powered macro tracking and nutritional insight built for high performance.</p>
+        </div>
+
+        {/* Tab Controls */}
+        <div className="flex bg-slate-900/60 p-1 rounded-2xl border border-slate-850 mb-6">
           <button 
             onClick={() => setActiveTab('signin')} 
-            className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
-              activeTab === 'signin' ? 'bg-emerald-500 text-slate-950 neon font-bold' : 'text-slate-400 hover:text-slate-200'
+            className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${
+              activeTab === 'signin' ? 'bg-emerald-500 text-slate-950 neon font-black' : 'text-slate-500 hover:text-slate-350'
             }`}
           >
             Sign In
           </button>
           <button 
             onClick={() => setActiveTab('signup')} 
-            className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
-              activeTab === 'signup' ? 'bg-emerald-500 text-slate-950 neon font-bold' : 'text-slate-400 hover:text-slate-200'
+            className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${
+              activeTab === 'signup' ? 'bg-emerald-500 text-slate-950 neon font-black' : 'text-slate-500 hover:text-slate-350'
             }`}
           >
             Sign Up
@@ -202,7 +219,6 @@ export const Login = () => {
         {/* Sign In panel */}
         {activeTab === 'signin' ? (
           <div id="panelSignIn" className="space-y-4">
-            <p className="text-slate-400 text-sm mb-4">Track your macros, hit your goals</p>
             
             {/* Real Google Sign In container OR simulated Google Sign In button */}
             {isRealGoogle ? (
@@ -212,7 +228,7 @@ export const Login = () => {
             ) : (
               <button 
                 onClick={() => setIsSimModalOpen(true)} 
-                className="w-full flex items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4"
+                className="w-full flex items-center justify-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/80 px-5 py-3.5 transition-all duration-350 hover:scale-[1.01] active:scale-[0.99] mb-4"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -220,48 +236,62 @@ export const Login = () => {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                <span className="font-medium text-sm text-slate-200">Sign in with Google</span>
+                <span className="font-bold text-xs uppercase tracking-wider text-slate-200">Sign in with Google</span>
               </button>
             )}
 
             <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-slate-800"></div>
-              <span className="flex-shrink mx-4 text-slate-500 text-xs">or sign in with email</span>
-              <div className="flex-grow border-t border-slate-800"></div>
+              <div className="flex-grow border-t border-slate-900"></div>
+              <span className="flex-shrink mx-4 text-slate-650 text-[10px] uppercase font-black tracking-widest">or email credentials</span>
+              <div className="flex-grow border-t border-slate-900"></div>
             </div>
             
             {/* Credentials Login Form */}
-            <form onSubmit={handleCredentialsLogin} className="space-y-3 text-left">
-              <label className="block">
-                <span className="text-sm text-slate-300 font-medium">Email</span>
-                <input 
-                  type="email" 
-                  required 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com" 
-                  className="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100 placeholder-slate-500" 
-                />
-              </label>
-              <label className="block">
-                <span className="text-sm text-slate-300 font-medium">Password</span>
-                <input 
-                  type="password" 
-                  required 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Any password works" 
-                  className="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100 placeholder-slate-500" 
-                />
-              </label>
-              <p className="text-[10px] text-slate-500 text-center">Your email becomes your user ID. Data is stored locally and synced to the cloud.</p>
-              <button type="submit" className="w-full rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition text-sm">Sign In</button>
+            <form onSubmit={handleCredentialsLogin} className="space-y-4 text-left">
+              <div className="relative">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Email Address</span>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
+                  <input 
+                    type="email" 
+                    required 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com" 
+                    className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" 
+                  />
+                </div>
+              </div>
+
+              <div className="relative">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Password</span>
+                <div className="relative">
+                  <Key className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
+                  <input 
+                    type="password" 
+                    required 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter any password" 
+                    className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" 
+                  />
+                </div>
+              </div>
+
+              <p className="text-[10px] text-slate-500 leading-relaxed text-center py-1">Your email identifies your profile. Data is cached locally and synced to Supabase instantly.</p>
+              
+              <button 
+                type="submit" 
+                className="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3.5 font-black uppercase tracking-wider text-slate-950 neon hover:bg-emerald-450 transition duration-300 text-xs"
+              >
+                <span>Access FitTrack</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </form>
           </div>
         ) : (
           /* Sign Up panel */
           <div id="panelSignUp" className="space-y-4">
-            <p className="text-slate-400 text-sm mb-4">Create a new account to start tracking</p>
             
             {/* Real Google Sign Up container OR simulated Google Sign Up button */}
             {isRealGoogle ? (
@@ -271,7 +301,7 @@ export const Login = () => {
             ) : (
               <button 
                 onClick={() => setIsSimModalOpen(true)} 
-                className="w-full flex items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4"
+                className="w-full flex items-center justify-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/80 px-5 py-3.5 transition-all duration-350 hover:scale-[1.01] active:scale-[0.99] mb-4"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -279,50 +309,64 @@ export const Login = () => {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                <span className="font-medium text-sm text-slate-200">Sign up with Google</span>
+                <span className="font-bold text-xs uppercase tracking-wider text-slate-200">Sign up with Google</span>
               </button>
             )}
 
             <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-slate-800"></div>
-              <span className="flex-shrink mx-4 text-slate-500 text-xs">or create an email account</span>
-              <div className="flex-grow border-t border-slate-800"></div>
+              <div className="flex-grow border-t border-slate-900"></div>
+              <span className="flex-shrink mx-4 text-slate-650 text-[10px] uppercase font-black tracking-widest">or register new account</span>
+              <div className="flex-grow border-t border-slate-900"></div>
             </div>
             
             {/* Credentials Sign Up Form */}
-            <form onSubmit={handleSignUpCredentials} className="space-y-3 text-left">
-              <label className="block">
-                <span className="text-sm text-slate-300 font-medium">Email</span>
-                <input 
-                  type="email" 
-                  required 
-                  value={signUpEmail}
-                  onChange={(e) => setSignUpEmail(e.target.value)}
-                  placeholder="you@example.com" 
-                  className="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100 placeholder-slate-500" 
-                />
-              </label>
-              <label className="block">
-                <span className="text-sm text-slate-300 font-medium">Password</span>
-                <input 
-                  type="password" 
-                  required 
-                  value={signUpPassword}
-                  onChange={(e) => setSignUpPassword(e.target.value)}
-                  placeholder="Create a password" 
-                  className="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100 placeholder-slate-500" 
-                />
-              </label>
-              <button type="submit" className="w-full rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition text-sm">Create Account</button>
+            <form onSubmit={handleSignUpCredentials} className="space-y-4 text-left">
+              <div className="relative">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Email Address</span>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
+                  <input 
+                    type="email" 
+                    required 
+                    value={signUpEmail}
+                    onChange={(e) => setSignUpEmail(e.target.value)}
+                    placeholder="you@example.com" 
+                    className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" 
+                  />
+                </div>
+              </div>
+
+              <div className="relative">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Create Password</span>
+                <div className="relative">
+                  <Key className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
+                  <input 
+                    type="password" 
+                    required 
+                    value={signUpPassword}
+                    onChange={(e) => setSignUpPassword(e.target.value)}
+                    placeholder="Min. 4 characters" 
+                    className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" 
+                  />
+                </div>
+              </div>
+
+              <button 
+                type="submit" 
+                className="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3.5 font-black uppercase tracking-wider text-slate-950 neon hover:bg-emerald-450 transition duration-300 text-xs"
+              >
+                <span>Register Profile</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </form>
           </div>
         )}
 
         {/* Guest Login */}
-        <div className="mt-6 border-t border-slate-800 pt-4">
+        <div className="mt-8 border-t border-slate-900 pt-5">
           <button 
             onClick={handleGuestLogin} 
-            className="text-xs text-emerald-400 hover:text-emerald-300 font-bold tracking-wider uppercase transition"
+            className="text-[10px] text-emerald-400 hover:text-emerald-300 font-black tracking-widest uppercase transition-colors"
           >
             Sign in as Guest (Offline Mode)
           </button>
@@ -331,22 +375,27 @@ export const Login = () => {
 
       {/* Google Sign In Simulator Modal */}
       {isSimModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <div className="w-full max-w-sm glass rounded-2xl p-6 slide-up text-left">
-            <h3 className="text-base font-bold text-slate-200 mb-2">Simulate Google Account Picker</h3>
-            <p className="text-xs text-slate-400 mb-5">Select a simulated user profile to test authentication and real-time database persistence.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm glass p-6 slide-up text-left">
+            
+            <div className="flex items-center gap-2 mb-2 text-emerald-400">
+              <Sparkles className="w-4 h-4" />
+              <h3 className="text-xs font-black uppercase tracking-wider">Simulated Account Picker</h3>
+            </div>
+            
+            <p className="text-[11px] text-slate-500 leading-relaxed mb-5">Select a simulated user profile to test authentication and real-time database persistence.</p>
             
             <div className="space-y-2 mb-6">
               {mockGoogleUsers.map((mockUser) => (
                 <button
                   key={mockUser.email}
                   onClick={() => handleMockGoogleLogin(mockUser)}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-800 bg-slate-950/40 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition text-left"
+                  className="w-full flex items-center gap-3.5 p-3 rounded-2xl border border-slate-800 bg-slate-900/30 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition duration-300 text-left"
                 >
-                  <img src={mockUser.picture} className="w-10 h-10 rounded-full object-cover border border-slate-700 flex-shrink-0" alt={mockUser.name} />
+                  <img src={mockUser.picture} className="w-10 h-10 rounded-full object-cover border border-slate-800 flex-shrink-0" alt={mockUser.name} />
                   <div>
-                    <p className="font-semibold text-xs text-slate-200">{mockUser.name}</p>
-                    <p className="text-[10px] text-slate-500">{mockUser.email}</p>
+                    <p className="font-bold text-xs text-slate-200">{mockUser.name}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">{mockUser.email}</p>
                   </div>
                 </button>
               ))}
@@ -354,7 +403,7 @@ export const Login = () => {
             
             <button 
               onClick={() => setIsSimModalOpen(false)} 
-              className="w-full rounded-xl border border-slate-700 bg-slate-900/55 py-2.5 text-xs text-slate-300 font-bold hover:bg-slate-800 transition"
+              className="w-full rounded-2xl border border-slate-850 bg-slate-900/80 py-3 text-xs text-slate-350 font-black uppercase tracking-wider hover:bg-slate-800 transition"
             >
               Cancel
             </button>

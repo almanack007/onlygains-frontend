@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Camera, Search, PlusCircle, Sparkles, Loader, RotateCw, Image as ImageIcon, X, HelpCircle } from 'lucide-react';
+import { Camera, Search, PlusCircle, Sparkles, Loader, RotateCw, Image as ImageIcon, X, HelpCircle, Dumbbell } from 'lucide-react';
 
 export const Lens = () => {
   const { 
@@ -67,7 +67,6 @@ export const Lens = () => {
         videoRef.current.play();
       }
 
-      // Check for multiple video inputs (e.g. rear vs front camera)
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
       setHasMultipleCameras(videoDevices.length > 1);
@@ -247,33 +246,33 @@ export const Lens = () => {
   };
 
   return (
-    <div id="panelAddFood" className="max-w-xl mx-auto space-y-6 py-4 pb-20">
+    <div id="panelAddFood" className="max-w-xl mx-auto space-y-6 py-4 pb-20 slide-up">
       
       {/* 1. Lens AI visual scanner card */}
-      <div className="glass rounded-2xl p-5 text-center relative overflow-hidden">
-        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.1)] z-30">
-          <Sparkles className="w-3 h-3" /> Lens Pro
+      <div className="glass rounded-[28px] p-6 text-center relative overflow-hidden">
+        <div className="absolute top-4 right-4 flex items-center gap-1.5 text-[9px] text-emerald-500 font-extrabold uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full shadow-[0_0_10px_rgba(204,255,0,0.15)] z-30">
+          <Sparkles className="w-3.5 h-3.5" /> Lens Pro
         </div>
 
-        <h2 className="text-lg font-bold text-slate-200 text-left mb-1" data-i18n="scan_meal">{dict.scan_meal}</h2>
-        <p className="text-xs text-slate-500 text-left mb-6">Point your camera or upload a photo to identify nutrients instantly.</p>
+        <h2 className="text-sm font-black uppercase tracking-wider text-slate-200 text-left mb-1" data-i18n="scan_meal">{dict.scan_meal}</h2>
+        <p className="text-xs text-slate-500 text-left mb-6 leading-relaxed">Point your camera or upload a photo to identify nutrients instantly.</p>
 
-        {/* Beautiful Mobile camera UI layout */}
-        <div className="relative w-full aspect-[9/16] sm:aspect-[3/4] max-h-[600px] rounded-3xl border border-slate-800 bg-black flex flex-col items-center justify-center overflow-hidden shadow-2xl">
+        {/* Viewport Frame */}
+        <div className="relative w-full aspect-[9/16] sm:aspect-[3/4] max-h-[550px] rounded-[24px] border border-slate-800 bg-slate-950 flex flex-col items-center justify-center overflow-hidden shadow-2xl">
           
-          {/* Top Camera Header bar (Only shown when active) */}
+          {/* Top Camera Header bar */}
           {isCameraActive && (
             <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-20 bg-gradient-to-b from-black/75 to-transparent text-slate-100">
               <button 
                 onClick={stopCamera} 
-                className="bg-black/40 hover:bg-black/60 p-2 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition"
+                className="bg-black/50 hover:bg-black/75 p-2.5 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition"
               >
                 <X className="w-4 h-4" />
               </button>
-              <h3 className="font-extrabold text-sm tracking-wider uppercase drop-shadow-md">AI Camera</h3>
+              <h3 className="font-extrabold text-xs uppercase tracking-widest drop-shadow-md">AI Visual Scan</h3>
               <button 
                 onClick={() => showToast('Position food inside the focus frame to scan.', 'info')} 
-                className="bg-black/40 hover:bg-black/60 p-2 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition"
+                className="bg-black/50 hover:bg-black/75 p-2.5 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition"
               >
                 <HelpCircle className="w-4 h-4" />
               </button>
@@ -295,7 +294,7 @@ export const Lens = () => {
             <img src={capturedImage} className="w-full h-full object-cover" alt="Captured Meal" />
           )}
 
-          {/* Focus Targets Overlay frame (Only shown when live streaming) */}
+          {/* Focus Targets Overlay frame */}
           {isCameraActive && (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-4 z-10 pointer-events-none">
               <div className="relative w-56 h-56 sm:w-64 sm:h-64 border-2 border-transparent">
@@ -305,7 +304,7 @@ export const Lens = () => {
                 <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-2xl"></div>
                 <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-2xl"></div>
               </div>
-              <p className="text-[10px] sm:text-xs text-white/90 font-semibold mt-8 bg-black/60 border border-white/10 px-4 py-1.5 rounded-full backdrop-blur-md drop-shadow">
+              <p className="text-[10px] text-white/90 font-bold uppercase tracking-wider mt-8 bg-black/60 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md drop-shadow">
                 Focus on plates and items home to the foods
               </p>
             </div>
@@ -315,20 +314,20 @@ export const Lens = () => {
           {!isCameraActive && !capturedImage && (
             <div className="flex flex-col items-center justify-center gap-3 p-6 text-center z-10">
               <Camera className="w-12 h-12 text-emerald-500 mb-2 animate-pulse" />
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+              <p className="text-xs text-slate-500 font-extrabold uppercase tracking-wider">
                 {cameraError || 'Camera stream is ready'}
               </p>
               
               <div className="flex flex-col gap-2 mt-4 w-44">
                 <button 
                   onClick={() => startCamera()} 
-                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition neon"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition neon"
                 >
                   Start Camera
                 </button>
                 <button 
                   onClick={() => fileInputRef.current?.click()} 
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-750 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition"
+                  className="bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-800 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition"
                 >
                   Upload Photo
                 </button>
@@ -339,7 +338,7 @@ export const Lens = () => {
           {/* Camera Scanning Overlay Lines */}
           {isScanning && <div className="scanner-line"></div>}
 
-          {/* Bottom Tabs selector pills (Only shown when live streaming) */}
+          {/* Bottom Tabs selector pills */}
           {isCameraActive && (
             <div className="absolute bottom-24 left-0 right-0 flex justify-center z-20">
               <div className="bg-black/65 backdrop-blur-md border border-white/10 rounded-full p-1 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider">
@@ -362,7 +361,7 @@ export const Lens = () => {
             </div>
           )}
 
-          {/* Bottom Shutter Capture Trigger Button (Only shown when live streaming) */}
+          {/* Bottom Shutter Capture Trigger Button */}
           {isCameraActive && (
             <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center z-20">
               <button 
@@ -388,39 +387,39 @@ export const Lens = () => {
 
         {/* Scan Results */}
         {isScanning && (
-          <div className="mt-4 p-4 rounded-xl border border-slate-800 bg-slate-950/60 flex items-center justify-center gap-2.5 text-xs text-slate-400">
-            <Loader className="w-4 h-4 text-emerald-400 animate-spin" /> Recognizing foods and estimating nutrition...
+          <div className="mt-4 p-4 rounded-2xl border border-slate-850 bg-slate-900/40 flex items-center justify-center gap-2.5 text-xs text-slate-400">
+            <Loader className="w-4 h-4 text-emerald-500 animate-spin" /> Recognizing foods and estimating nutrition...
           </div>
         )}
 
         {scanResult && (
           <div className="mt-4 text-left slide-up space-y-4">
             {scanResult.is_food ? (
-              <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+              <div className="p-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-slate-200 text-sm">
-                    Identified: <span className="text-emerald-400 font-extrabold capitalize">{scanResult.match || scanResult.identified_as}</span>
+                    Identified: <span className="text-emerald-500 font-extrabold capitalize">{scanResult.match || scanResult.identified_as}</span>
                   </h3>
-                  <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-500 px-2 py-0.5 rounded-full font-bold">
                     {scanResult.food_confidence || scanResult.confidence}% match
                   </span>
                 </div>
 
                 <div className="grid grid-cols-4 gap-2 text-center text-xs mb-4">
-                  <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                    <p className="text-[10px] text-slate-500 uppercase font-semibold">Calories</p>
+                  <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-850">
+                    <p className="text-[9px] text-slate-500 uppercase font-semibold">Calories</p>
                     <p className="font-bold text-slate-200 mt-0.5">{getLivePreview(scanResult.estimated_macros, lensServingAmount, lensServingUnit).cal} kcal</p>
                   </div>
-                  <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                    <p className="text-[10px] text-slate-500 uppercase font-semibold">Protein</p>
+                  <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-850">
+                    <p className="text-[9px] text-slate-500 uppercase font-semibold">Protein</p>
                     <p className="font-bold text-blue-400 mt-0.5">{getLivePreview(scanResult.estimated_macros, lensServingAmount, lensServingUnit).protein}g</p>
                   </div>
-                  <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                    <p className="text-[10px] text-slate-500 uppercase font-semibold">Carbs</p>
+                  <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-850">
+                    <p className="text-[9px] text-slate-500 uppercase font-semibold">Carbs</p>
                     <p className="font-bold text-amber-500 mt-0.5">{getLivePreview(scanResult.estimated_macros, lensServingAmount, lensServingUnit).carbs}g</p>
                   </div>
-                  <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                    <p className="text-[10px] text-slate-500 uppercase font-semibold">Fat</p>
+                  <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-850">
+                    <p className="text-[9px] text-slate-500 uppercase font-semibold">Fat</p>
                     <p className="font-bold text-pink-500 mt-0.5">{getLivePreview(scanResult.estimated_macros, lensServingAmount, lensServingUnit).fat}g</p>
                   </div>
                 </div>
@@ -431,12 +430,12 @@ export const Lens = () => {
                     type="number"
                     value={lensServingAmount}
                     onChange={(e) => setLensServingAmount(e.target.value)}
-                    className="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-slate-100 text-xs text-center"
+                    className="flex-1 rounded-2xl bg-slate-900 border border-slate-800 px-3 py-2.5 text-slate-100 text-xs text-center"
                   />
                   <select 
                     value={lensServingUnit}
                     onChange={(e) => setLensServingUnit(e.target.value)}
-                    className="rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-slate-100 text-xs"
+                    className="rounded-2xl bg-slate-900 border border-slate-800 px-3.5 py-2.5 text-slate-100 text-xs"
                   >
                     <option value="g">g</option>
                     <option value="oz">oz</option>
@@ -446,14 +445,14 @@ export const Lens = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <button onClick={() => { setScanResult(null); setCapturedImage(null); }} className="flex-1 rounded-xl border border-slate-700 bg-slate-900/55 py-2.5 text-xs text-slate-300 font-bold hover:bg-slate-800 transition">Retake</button>
-                  <button onClick={handleAddScannedFood} className="flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-2.5 text-xs font-bold transition neon">Log Scanned Meal</button>
+                  <button onClick={() => { setScanResult(null); setCapturedImage(null); }} className="flex-1 rounded-2xl border border-slate-850 bg-slate-900/80 py-3 text-xs text-slate-350 font-black uppercase tracking-wider hover:bg-slate-800 transition">Retake</button>
+                  <button onClick={handleAddScannedFood} className="flex-1 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-3 text-xs font-black uppercase tracking-wider transition neon">Log Scanned Meal</button>
                 </div>
               </div>
             ) : (
-              <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-center">
-                <p className="text-xs text-red-400 font-medium leading-relaxed mb-4">{scanResult.rejection_message}</p>
-                <button onClick={() => { setScanResult(null); setCapturedImage(null); }} className="px-5 py-2 rounded-xl border border-slate-700 bg-slate-900/55 text-xs text-slate-300 font-bold hover:bg-slate-800 transition">Try Again</button>
+              <div className="p-4 rounded-2xl border border-red-500/20 bg-red-500/5 text-center">
+                <p className="text-xs text-red-400 font-semibold leading-relaxed mb-4">{scanResult.rejection_message}</p>
+                <button onClick={() => { setScanResult(null); setCapturedImage(null); }} className="px-5 py-2 rounded-2xl border border-slate-850 bg-slate-900/80 text-xs text-slate-350 font-black uppercase tracking-wider hover:bg-slate-800 transition">Try Again</button>
               </div>
             )}
           </div>
@@ -461,31 +460,31 @@ export const Lens = () => {
       </div>
 
       {/* 2. Search and Custom Track list */}
-      <div className="glass rounded-2xl p-5">
-        <h2 className="text-lg font-bold text-slate-200 mb-4" data-i18n="add_food">{dict.add_food}</h2>
+      <div className="glass rounded-[28px] p-6">
+        <h2 className="text-sm font-black uppercase tracking-wider text-slate-200 mb-4" data-i18n="add_food">{dict.add_food}</h2>
         
         {/* Search bar */}
         <div className="relative mb-4">
-          <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
           <input 
             type="text" 
             placeholder="Search dal, paneer, roti, banana..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl bg-slate-950/80 border border-slate-850 pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-650"
+            className="w-full rounded-2xl bg-slate-900/80 border border-slate-800 pl-11 pr-4 py-3 text-xs text-slate-100 placeholder-slate-650"
           />
         </div>
 
         {/* Categories tab scroll */}
-        <div className="flex gap-1.5 overflow-x-auto thin-scroll pb-2 mb-4">
+        <div className="flex gap-2 overflow-x-auto thin-scroll pb-2 mb-4">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`food-tab flex-shrink-0 px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+              className={`food-tab flex-shrink-0 px-3.5 py-2 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all duration-200 ${
                 activeCategory === cat 
-                  ? 'tab-active border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)] font-black' 
-                  : 'border-slate-800 bg-slate-950/40 text-slate-500 hover:border-slate-700 hover:text-slate-300'
+                  ? 'tab-active border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_rgba(204,255,0,0.15)] font-black' 
+                  : 'border-slate-850 bg-slate-900/40 text-slate-500 hover:border-slate-700 hover:text-slate-300'
               }`}
             >
               {cat}
@@ -494,7 +493,7 @@ export const Lens = () => {
         </div>
 
         {/* List of matched items */}
-        <div className="space-y-1.5 max-h-[300px] overflow-y-auto thin-scroll pr-1">
+        <div className="space-y-2 max-h-[300px] overflow-y-auto thin-scroll pr-1">
           {getFilteredFoods().length === 0 ? (
             <p className="text-xs text-slate-500 text-center py-8">No foods match your search criteria.</p>
           ) : (
@@ -502,15 +501,15 @@ export const Lens = () => {
               <button
                 key={name}
                 onClick={() => setSelectedFoodName(name)}
-                className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-950/40 hover:border-emerald-500/40 transition text-left"
+                className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-850 bg-slate-900/30 hover:border-slate-700 transition duration-200 text-left"
               >
                 <div>
-                  <p className="font-semibold text-xs text-slate-200">{name}</p>
-                  <p className="text-[10px] text-slate-500 mt-1 capitalize">
+                  <p className="font-extrabold text-xs text-slate-200">{name}</p>
+                  <p className="text-[10px] text-slate-550 mt-1 capitalize font-medium">
                     {data.category} • {data.cal} kcal / {data.per}{data.unit}
                   </p>
                 </div>
-                <div className="text-emerald-400 hover:scale-115 transition">
+                <div className="text-emerald-500 hover:scale-110 transition">
                   <PlusCircle className="w-5 h-5" />
                 </div>
               </button>
@@ -521,26 +520,26 @@ export const Lens = () => {
 
       {/* Serving Amount Custom Input Dialog Modal */}
       {selectedFoodName && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <div className="w-full max-w-sm glass rounded-2xl p-5 sm:p-6 slide-up text-left">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm glass p-6 slide-up text-left">
             <h3 className="font-black text-slate-200 text-sm mb-1">Add serving portion</h3>
-            <p className="text-xs text-slate-500 mb-4 capitalize">{selectedFoodName} ({foodDatabase[selectedFoodName].category})</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-4 capitalize">{selectedFoodName} ({foodDatabase[selectedFoodName].category})</p>
 
             <div className="grid grid-cols-4 gap-2 text-center text-xs mb-5">
-              <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                <p className="text-[10px] text-slate-500 uppercase font-semibold">Calories</p>
+              <div className="bg-slate-900/60 p-2.5 rounded-2xl border border-slate-850">
+                <p className="text-[9px] text-slate-500 uppercase font-semibold">Calories</p>
                 <p className="font-bold text-slate-200 mt-0.5">{getLivePreview(foodDatabase[selectedFoodName], servingAmount, servingUnit).cal} kcal</p>
               </div>
-              <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                <p className="text-[10px] text-slate-500 uppercase font-semibold">Protein</p>
+              <div className="bg-slate-900/60 p-2.5 rounded-2xl border border-slate-850">
+                <p className="text-[9px] text-slate-500 uppercase font-semibold">Protein</p>
                 <p className="font-bold text-blue-400 mt-0.5">{getLivePreview(foodDatabase[selectedFoodName], servingAmount, servingUnit).protein}g</p>
               </div>
-              <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                <p className="text-[10px] text-slate-500 uppercase font-semibold">Carbs</p>
+              <div className="bg-slate-900/60 p-2.5 rounded-2xl border border-slate-850">
+                <p className="text-[9px] text-slate-500 uppercase font-semibold">Carbs</p>
                 <p className="font-bold text-amber-500 mt-0.5">{getLivePreview(foodDatabase[selectedFoodName], servingAmount, servingUnit).carbs}g</p>
               </div>
-              <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                <p className="text-[10px] text-slate-500 uppercase font-semibold">Fat</p>
+              <div className="bg-slate-900/60 p-2.5 rounded-2xl border border-slate-850">
+                <p className="text-[9px] text-slate-500 uppercase font-semibold">Fat</p>
                 <p className="font-bold text-pink-500 mt-0.5">{getLivePreview(foodDatabase[selectedFoodName], servingAmount, servingUnit).fat}g</p>
               </div>
             </div>
@@ -550,12 +549,12 @@ export const Lens = () => {
                 type="number"
                 value={servingAmount}
                 onChange={(e) => setServingAmount(e.target.value)}
-                className="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-slate-100 text-xs text-center"
+                className="flex-1 rounded-2xl bg-slate-900 border border-slate-800 px-3.5 py-3 text-slate-100 text-xs text-center"
               />
               <select 
                 value={servingUnit}
                 onChange={(e) => setServingUnit(e.target.value)}
-                className="rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-slate-100 text-xs"
+                className="rounded-2xl bg-slate-900 border border-slate-800 px-4 py-3 text-slate-100 text-xs"
               >
                 <option value="g">g</option>
                 <option value="oz">oz</option>
@@ -565,8 +564,8 @@ export const Lens = () => {
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => setSelectedFoodName(null)} className="flex-1 rounded-xl border border-slate-700 bg-slate-900/55 py-2.5 text-xs text-slate-300 font-bold hover:bg-slate-800 transition">Cancel</button>
-              <button onClick={handleAddSearchFood} className="flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-2.5 text-xs font-bold transition neon">Log Food</button>
+              <button onClick={() => setSelectedFoodName(null)} className="flex-1 rounded-2xl border border-slate-850 bg-slate-900/80 py-3 text-xs text-slate-350 font-black uppercase tracking-wider hover:bg-slate-800 transition">Cancel</button>
+              <button onClick={handleAddSearchFood} className="flex-1 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-3 text-xs font-black uppercase tracking-wider transition neon">Log Food</button>
             </div>
           </div>
         </div>
