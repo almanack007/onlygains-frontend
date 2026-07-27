@@ -68,7 +68,8 @@ export const Login = () => {
         if (!res.ok) throw new Error('API config call failed');
         const data = await res.json();
         
-        if (data.googleClientId && data.googleClientId !== 'YOUR_GOOGLE_CLIENT_ID') {
+        const isNative = !!window.Capacitor;
+        if (!isNative && data.googleClientId && data.googleClientId !== 'YOUR_GOOGLE_CLIENT_ID') {
           setGoogleClientId(data.googleClientId);
           setIsRealGoogle(true);
         }
