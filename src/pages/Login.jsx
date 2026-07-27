@@ -14,6 +14,22 @@ export const Login = () => {
   const [isRealGoogle, setIsRealGoogle] = useState(false);
   const [googleClientId, setGoogleClientId] = useState(null);
   const [isSimModalOpen, setIsSimModalOpen] = useState(false);
+  const [googleLoaded, setGoogleLoaded] = useState(!!window.google);
+
+  // Poll for window.google script loading
+  useEffect(() => {
+    if (window.google) {
+      setGoogleLoaded(true);
+      return;
+    }
+    const interval = setInterval(() => {
+      if (window.google) {
+        setGoogleLoaded(true);
+        clearInterval(interval);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   const googleSignInRef = useRef(null);
   const googleSignUpRef = useRef(null);
@@ -68,11 +84,7 @@ export const Login = () => {
         if (!res.ok) throw new Error('API config call failed');
         const data = await res.json();
         
-        const isNative = 
-          !!window.Capacitor || 
-          window.location.origin.startsWith('capacitor://') || 
-          (window.location.origin === 'http://localhost');
-        if (!isNative && data.googleClientId && data.googleClientId !== 'YOUR_GOOGLE_CLIENT_ID') {
+        if (data.googleClientId && data.googleClientId !== 'YOUR_GOOGLE_CLIENT_ID') {
           setGoogleClientId(data.googleClientId);
           setIsRealGoogle(true);
         }
@@ -85,7 +97,7 @@ export const Login = () => {
 
   // Initialize and render Google Identity Services buttons if client is ready
   useEffect(() => {
-    if (isRealGoogle && googleClientId && window.google) {
+    if (isRealGoogle && googleClientId && googleLoaded && window.google) {
       try {
         window.google.accounts.id.initialize({
           client_id: googleClientId,
@@ -113,7 +125,7 @@ export const Login = () => {
         console.error('Google button render failed:', err);
       }
     }
-  }, [isRealGoogle, googleClientId]);
+  }, [isRealGoogle, googleClientId, googleLoaded]);
 
   const handleCredentialsLogin = (e) => {
     e.preventDefault();
