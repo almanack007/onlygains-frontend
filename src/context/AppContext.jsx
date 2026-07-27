@@ -140,12 +140,11 @@ export const AppProvider = ({ children }) => {
   const [apiBase, setApiBase] = useState(() => {
     const saved = localStorage.getItem('fittrack_api_base');
     if (saved) return saved;
-    // Set fallback: if running inside local APK, don't use window.location.origin, default to localhost backend
-    if (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')) {
-      return `${window.location.origin}/api`;
+    // Capacitor/mobile webview fallback (runs on capacitor:// or http://localhost with no dev port)
+    if (window.location.origin.startsWith('capacitor://') || window.location.origin === 'http://localhost') {
+      return 'http://10.0.2.2:3000/api';
     }
-    // Mobile fallback default
-    return 'http://10.0.2.2:3000/api'; // Android emulator localhost alias
+    return '/api';
   });
 
   const [lang, setLang] = useState(() => localStorage.getItem('fittrack_language') || 'en');
