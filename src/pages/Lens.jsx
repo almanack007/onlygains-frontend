@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Camera, Search, PlusCircle, Sparkles, Loader, RotateCw, Image as ImageIcon } from 'lucide-react';
+import { Camera, Search, PlusCircle, Sparkles, Loader, RotateCw, Image as ImageIcon, X, HelpCircle } from 'lucide-react';
 
 export const Lens = () => {
   const { 
@@ -251,16 +251,35 @@ export const Lens = () => {
       
       {/* 1. Lens AI visual scanner card */}
       <div className="glass rounded-2xl p-5 text-center relative overflow-hidden">
-        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.1)] z-30">
           <Sparkles className="w-3 h-3" /> Lens Pro
         </div>
 
         <h2 className="text-lg font-bold text-slate-200 text-left mb-1" data-i18n="scan_meal">{dict.scan_meal}</h2>
         <p className="text-xs text-slate-500 text-left mb-6">Point your camera or upload a photo to identify nutrients instantly.</p>
 
-        {/* Scanner Viewport */}
-        <div className="relative w-full aspect-video rounded-2xl border border-slate-800 bg-slate-950/40 flex flex-col items-center justify-center overflow-hidden">
+        {/* Beautiful Mobile camera UI layout */}
+        <div className="relative w-full aspect-[9/16] sm:aspect-[3/4] max-h-[600px] rounded-3xl border border-slate-800 bg-black flex flex-col items-center justify-center overflow-hidden shadow-2xl">
           
+          {/* Top Camera Header bar (Only shown when active) */}
+          {isCameraActive && (
+            <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-20 bg-gradient-to-b from-black/75 to-transparent text-slate-100">
+              <button 
+                onClick={stopCamera} 
+                className="bg-black/40 hover:bg-black/60 p-2 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <h3 className="font-extrabold text-sm tracking-wider uppercase drop-shadow-md">AI Camera</h3>
+              <button 
+                onClick={() => showToast('Position food inside the focus frame to scan.', 'info')} 
+                className="bg-black/40 hover:bg-black/60 p-2 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition"
+              >
+                <HelpCircle className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           {/* Live Video Feed */}
           {isCameraActive && (
             <video 
@@ -276,24 +295,40 @@ export const Lens = () => {
             <img src={capturedImage} className="w-full h-full object-cover" alt="Captured Meal" />
           )}
 
+          {/* Focus Targets Overlay frame (Only shown when live streaming) */}
+          {isCameraActive && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 z-10 pointer-events-none">
+              <div className="relative w-56 h-56 sm:w-64 sm:h-64 border-2 border-transparent">
+                {/* Focus box corners */}
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-2xl"></div>
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-2xl"></div>
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-2xl"></div>
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-2xl"></div>
+              </div>
+              <p className="text-[10px] sm:text-xs text-white/90 font-semibold mt-8 bg-black/60 border border-white/10 px-4 py-1.5 rounded-full backdrop-blur-md drop-shadow">
+                Focus on plates and items home to the foods
+              </p>
+            </div>
+          )}
+
           {/* Default Placeholder View */}
           {!isCameraActive && !capturedImage && (
-            <div className="flex flex-col items-center justify-center gap-3 p-4">
-              <Camera className="w-10 h-10 text-emerald-500 animate-pulse" />
+            <div className="flex flex-col items-center justify-center gap-3 p-6 text-center z-10">
+              <Camera className="w-12 h-12 text-emerald-500 mb-2 animate-pulse" />
               <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-                {cameraError || 'Camera view ready'}
+                {cameraError || 'Camera stream is ready'}
               </p>
               
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-4 w-44">
                 <button 
                   onClick={() => startCamera()} 
-                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition neon"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition neon"
                 >
                   Start Camera
                 </button>
                 <button 
                   onClick={() => fileInputRef.current?.click()} 
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-350 border border-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition"
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-750 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition"
                 >
                   Upload Photo
                 </button>
@@ -304,33 +339,38 @@ export const Lens = () => {
           {/* Camera Scanning Overlay Lines */}
           {isScanning && <div className="scanner-line"></div>}
 
-          {/* Active Camera Action Overlays */}
+          {/* Bottom Tabs selector pills (Only shown when live streaming) */}
           {isCameraActive && (
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-4 px-4">
-              <button 
-                onClick={captureSnapshot} 
-                className="bg-emerald-500 text-slate-950 w-14 h-14 rounded-full flex items-center justify-center font-bold border-4 border-slate-900/60 shadow-lg hover:scale-105 active:scale-95 transition"
-                title="Capture Frame"
-              >
-                <div className="w-8 h-8 rounded-full border-2 border-slate-950"></div>
-              </button>
-
-              {hasMultipleCameras && (
+            <div className="absolute bottom-24 left-0 right-0 flex justify-center z-20">
+              <div className="bg-black/65 backdrop-blur-md border border-white/10 rounded-full p-1 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider">
+                <button className="bg-white text-slate-950 px-4 py-2 rounded-full flex items-center gap-1 transition-all">
+                  <Camera className="w-3.5 h-3.5" /> AI Camera
+                </button>
                 <button 
                   onClick={toggleFacingMode}
-                  className="absolute right-6 bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 p-2.5 rounded-full transition"
-                  title="Flip Camera"
+                  className="text-slate-350 hover:text-white px-4 py-2 rounded-full flex items-center gap-1 transition-all"
                 >
-                  <RotateCw className="w-4 h-4" />
+                  <RotateCw className="w-3.5 h-3.5" /> Flip
                 </button>
-              )}
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-slate-350 hover:text-white px-4 py-2 rounded-full flex items-center gap-1 transition-all"
+                >
+                  <ImageIcon className="w-3.5 h-3.5" /> Gallery
+                </button>
+              </div>
+            </div>
+          )}
 
+          {/* Bottom Shutter Capture Trigger Button (Only shown when live streaming) */}
+          {isCameraActive && (
+            <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center z-20">
               <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute left-6 bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 p-2.5 rounded-full transition"
-                title="File Upload"
+                onClick={captureSnapshot} 
+                className="w-16 h-16 rounded-full border-4 border-white bg-transparent flex items-center justify-center p-1 hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+                title="Capture Photo"
               >
-                <ImageIcon className="w-4 h-4" />
+                <div className="w-full h-full rounded-full bg-white"></div>
               </button>
             </div>
           )}
