@@ -244,22 +244,53 @@ export const Home = () => {
           </h2>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
-            
-            {/* Animated bottle graphic */}
-            <div className="water-bottle-wrapper" onClick={() => handleAddWater(250)}>
-              <div className="water-bottle-cap"></div>
-              <div className="water-bottle-container">
-                {/* Grooves */}
-                <div className="bottle-groove" style={{ top: '25px' }}></div>
-                <div className="bottle-groove" style={{ top: '55px' }}></div>
-                <div className="bottle-groove" style={{ top: '85px' }}></div>
-                {/* Dynamic Water fill */}
-                <div 
-                  className="water-bottle-fill" 
-                  style={{ height: `${waterPercent}%`, background: 'rgba(59, 130, 246, 0.65)' }}
-                ></div>
+            {/* Animated bottle graphic grid */}
+            <div className="flex-1 flex flex-col items-center justify-center gap-4">
+              <div id="waterBottles" className="flex flex-wrap gap-4 items-center justify-center p-2 w-full">
+                {(() => {
+                  const bottles = [];
+                  const bottleCapacity = 1000;
+                  const fullBottles = Math.floor(waterIntake / bottleCapacity);
+                  const remainingWater = waterIntake % bottleCapacity;
+
+                  for (let i = 0; i < fullBottles; i++) {
+                    bottles.push({ label: '1 L', percent: 100 });
+                  }
+
+                  if (waterIntake === 0 || remainingWater > 0 || fullBottles === 0) {
+                    const fillPercent = (remainingWater / bottleCapacity) * 100;
+                    bottles.push({ label: `${remainingWater} ml`, percent: fillPercent });
+                  }
+
+                  return bottles.map((bottle, idx) => (
+                    <div 
+                      key={idx} 
+                      className="water-bottle-wrapper cursor-pointer opacity-90 hover:opacity-100 transition-all duration-200" 
+                      onClick={() => handleAddWater(250)}
+                    >
+                      <div className="water-bottle-cap"></div>
+                      <div className="water-bottle-container">
+                        <div className="bottle-groove" style={{ top: '30%' }}></div>
+                        <div className="bottle-groove" style={{ top: '50%' }}></div>
+                        <div className="bottle-groove" style={{ top: '70%' }}></div>
+                        <div 
+                          className="water-bottle-fill" 
+                          style={{ height: `${bottle.percent}%` }}
+                        ></div>
+                        <div className="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-slate-800 z-20 mix-blend-difference">
+                          {bottle.label}
+                        </div>
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
-              <p className="text-[10px] text-slate-500 font-bold uppercase mt-2 hover:text-emerald-400 transition">+250ml Glass</p>
+              <p 
+                className="text-[10px] text-slate-500 font-bold uppercase hover:text-emerald-400 transition cursor-pointer"
+                onClick={() => handleAddWater(250)}
+              >
+                +250ml Glass (Click bottle to drink)
+              </p>
             </div>
 
             {/* Quick add water buttons */}
