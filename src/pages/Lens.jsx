@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Camera, Search, PlusCircle, Sparkles, Loader } from 'lucide-react';
+import { Camera, Search, PlusCircle, Sparkles, Loader, RotateCw, Image as ImageIcon } from 'lucide-react';
 
 export const Lens = () => {
   const { 
     foodDatabase, categories, conversions, todayLog, setTodayLog, 
-    apiBase, showToast, translations, lang, currentTotals, userProfile
+    apiBase, showToast, translations, lang
   } = useApp();
 
   const dict = translations[lang] || translations.en;
@@ -24,6 +24,94 @@ export const Lens = () => {
   const [lensServingAmount, setLensServingAmount] = useState('100');
   const [lensServingUnit, setLensServingUnit] = useState('g');
 
+  // Camera Live Streaming states
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [facingMode, setFacingMode] = useState('environment'); // 'user' or 'environment'
+  const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
+  const [cameraError, setCameraError] = useState('');
+
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  // Stop camera tracks helper
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  // Start camera streaming
+  const startCamera = async (mode = facingMode) => {
+    stopCamera();
+    setCameraError('');
+    setIsCameraActive(true);
+    setCapturedImage(null);
+    setScanResult(null);
+
+    try {
+      const constraints = {
+        video: { facingMode: mode }
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+
+      // Check for multiple video inputs (e.g. rear vs front camera)
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      setHasMultipleCameras(videoDevices.length > 1);
+
+    } catch (err) {
+      console.error('Camera access failed:', err);
+      setCameraError('Camera access unavailable. Please upload a picture instead.');
+      setIsCameraActive(false);
+    }
+  };
+
+  // Capture image snapshot from video stream
+  const captureSnapshot = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 360;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const base64Image = canvas.toDataURL('image/jpeg');
+    setCapturedImage(base64Image);
+    stopCamera();
+    triggerScan(base64Image);
+  };
+
+  // Switch camera between front and back
+  const toggleFacingMode = () => {
+    const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(nextMode);
+    if (isCameraActive) {
+      startCamera(nextMode);
+    }
+  };
+
+  // Clean up camera stream on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
   // Filter foods based on query & category
   const getFilteredFoods = () => {
     return Object.entries(foodDatabase).filter(([name, data]) => {
@@ -33,11 +121,12 @@ export const Lens = () => {
     });
   };
 
-  // Convert files to base64
+  // Handle manual image uploads
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    stopCamera();
     const reader = new FileReader();
     reader.onloadend = () => {
       setCapturedImage(reader.result);
@@ -90,7 +179,6 @@ export const Lens = () => {
     const amount = Number(servingAmount);
     if (!amount || amount <= 0) return;
 
-    // Convert serving units
     const factor = conversions[servingUnit] / conversions[food.unit];
     const baseQty = (amount * factor) / food.per;
 
@@ -121,7 +209,6 @@ export const Lens = () => {
     const amount = Number(lensServingAmount);
     if (!amount || amount <= 0) return;
 
-    // Determine final name: match or recognized name
     const finalName = scanResult.match || scanResult.identified_as || 'Scanned Meal';
     const factor = conversions[lensServingUnit] / conversions[macros.unit];
     const baseQty = (amount * factor) / macros.per;
@@ -172,20 +259,92 @@ export const Lens = () => {
         <p className="text-xs text-slate-500 text-left mb-6">Point your camera or upload a photo to identify nutrients instantly.</p>
 
         {/* Scanner Viewport */}
-        <div className="relative w-full aspect-video rounded-2xl border-2 border-dashed border-slate-700 bg-slate-950/40 hover:border-emerald-500/40 transition-all flex flex-col items-center justify-center overflow-hidden group">
-          {capturedImage ? (
-            <>
-              <img src={capturedImage} className="w-full h-full object-cover" alt="Captured Meal" />
-              {isScanning && <div className="scanner-line"></div>}
-            </>
-          ) : (
-            <label className="cursor-pointer flex flex-col items-center gap-2 text-slate-400 hover:text-slate-200 transition">
-              <Camera className="w-10 h-10 text-emerald-500 group-hover:scale-110 transition duration-300" />
-              <span className="text-xs font-bold uppercase tracking-wider">Take Photo / Upload Image</span>
-              <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-            </label>
+        <div className="relative w-full aspect-video rounded-2xl border border-slate-800 bg-slate-950/40 flex flex-col items-center justify-center overflow-hidden">
+          
+          {/* Live Video Feed */}
+          {isCameraActive && (
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              className="w-full h-full object-cover"
+            />
+          )}
+
+          {/* Captured Preview Image */}
+          {capturedImage && (
+            <img src={capturedImage} className="w-full h-full object-cover" alt="Captured Meal" />
+          )}
+
+          {/* Default Placeholder View */}
+          {!isCameraActive && !capturedImage && (
+            <div className="flex flex-col items-center justify-center gap-3 p-4">
+              <Camera className="w-10 h-10 text-emerald-500 animate-pulse" />
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                {cameraError || 'Camera view ready'}
+              </p>
+              
+              <div className="flex gap-2 mt-2">
+                <button 
+                  onClick={() => startCamera()} 
+                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition neon"
+                >
+                  Start Camera
+                </button>
+                <button 
+                  onClick={() => fileInputRef.current?.click()} 
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-350 border border-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition"
+                >
+                  Upload Photo
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Camera Scanning Overlay Lines */}
+          {isScanning && <div className="scanner-line"></div>}
+
+          {/* Active Camera Action Overlays */}
+          {isCameraActive && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-4 px-4">
+              <button 
+                onClick={captureSnapshot} 
+                className="bg-emerald-500 text-slate-950 w-14 h-14 rounded-full flex items-center justify-center font-bold border-4 border-slate-900/60 shadow-lg hover:scale-105 active:scale-95 transition"
+                title="Capture Frame"
+              >
+                <div className="w-8 h-8 rounded-full border-2 border-slate-950"></div>
+              </button>
+
+              {hasMultipleCameras && (
+                <button 
+                  onClick={toggleFacingMode}
+                  className="absolute right-6 bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 p-2.5 rounded-full transition"
+                  title="Flip Camera"
+                >
+                  <RotateCw className="w-4 h-4" />
+                </button>
+              )}
+
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute left-6 bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 p-2.5 rounded-full transition"
+                title="File Upload"
+              >
+                <ImageIcon className="w-4 h-4" />
+              </button>
+            </div>
           )}
         </div>
+
+        {/* Hidden Canvas and File Inputs */}
+        <canvas ref={canvasRef} className="hidden" />
+        <input 
+          ref={fileInputRef}
+          type="file" 
+          accept="image/*" 
+          onChange={handleImageUpload} 
+          className="hidden" 
+        />
 
         {/* Scan Results */}
         {isScanning && (
