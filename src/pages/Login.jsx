@@ -177,7 +177,7 @@ export const Login = () => {
     <section id="loginPage" className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md glass rounded-2xl p-6 sm:p-8 slide-up text-center">
         <p className="text-emerald-400 font-bold tracking-[.25em] text-xs uppercase">muscle building nutrition</p>
-        <h1 className="text-3xl sm:text-4xl font-black mt-3 mb-4 text-slate-100">FitTrack Pro</h1>
+        <h1 className="text-3xl sm:text-4xl font-black mt-3 mb-4 text-slate-100 font-serif-editorial italic">FitTrack Pro</h1>
         
         {/* Tab Buttons */}
         <div className="flex bg-slate-900/60 p-1.5 rounded-xl border border-slate-800 mb-6">
