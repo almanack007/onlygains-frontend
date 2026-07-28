@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
-import { Activity, Mail, Key, ArrowRight, Sparkles } from 'lucide-react';
+import { Activity, Mail, Key, ArrowRight, Sparkles, Loader } from 'lucide-react';
 
 export const Login = () => {
   const { loginUser, apiBase, showToast } = useApp();
@@ -10,9 +10,18 @@ export const Login = () => {
   const [signUpEmail, setSignUpEmail] = useState('');
   const [signUpPassword, setSignUpPassword] = useState('');
   const [isSimModalOpen, setIsSimModalOpen] = useState(false);
-
-  // Google config: clientId is set when backend returns a valid one
   const [googleClientId, setGoogleClientId] = useState(null);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Detect if running inside a Capacitor native WebView
+  const isNativeApp = () => {
+    return (
+      !!window.Capacitor ||
+      window.location.origin.startsWith('capacitor://') ||
+      window.location.origin === 'http://localhost' ||
+      window.location.origin === 'https://localhost'
+    );
+  };
 
   const mockGoogleUsers = [
     { name: 'Rohan Sharma', email: 'rohan.sharma@fittrack.in', color: 'emerald', picture: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?fit=crop&w=120&h=120&q=80' },
@@ -20,42 +29,7 @@ export const Login = () => {
     { name: 'Amit Verma', email: 'amit.verma@fittrack.in', color: 'blue', picture: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?fit=crop&w=120&h=120&q=80' }
   ];
 
-  // Helper to decode JWT token returned by Google
-  const decodeJwt = (token) => {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        window.atob(base64)
-          .split('')
-          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      return JSON.parse(jsonPayload);
-    } catch (e) {
-      return null;
-    }
-  };
-
-  const handleGoogleCallback = (response) => {
-    const payload = decodeJwt(response.credential);
-    if (!payload) {
-      showToast('Google Sign-In failed: invalid credential token', 'error');
-      return;
-    }
-    const user = {
-      id: 'google-' + payload.sub,
-      name: payload.name,
-      email: payload.email,
-      picture: payload.picture,
-      phone: localStorage.getItem('fittrack_phone') || '',
-      color: 'emerald'
-    };
-    loginUser(user);
-    showToast(`Welcome back, ${payload.name}!`, 'success');
-  };
-
-  // Fetch Google Client ID from backend config
+  // Fetch Google Client ID from backend
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -72,19 +46,18 @@ export const Login = () => {
     fetchConfig();
   }, [apiBase]);
 
-  // Initialize Google One Tap when clientId is ready and GSI script is loaded
+  // Wait for GSI script to load, then initialize
   useEffect(() => {
     if (!googleClientId) return;
     const init = () => {
       if (!window.google?.accounts?.id) return;
       window.google.accounts.id.initialize({
         client_id: googleClientId,
-        callback: handleGoogleCallback,
+        callback: handleIdTokenCallback,
         auto_select: false,
         cancel_on_tap_outside: true
       });
     };
-    // GSI script may still be loading - retry until available
     if (window.google?.accounts?.id) {
       init();
     } else {
@@ -98,25 +71,86 @@ export const Login = () => {
     }
   }, [googleClientId]);
 
-  // Trigger Google One Tap popup or fall back to simulated picker
+  // Callback for ID token flow (from renderButton)
+  const handleIdTokenCallback = (response) => {
+    try {
+      const base64Url = response.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(
+        decodeURIComponent(
+          window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+        )
+      );
+      const user = {
+        id: 'google-' + payload.sub,
+        name: payload.name,
+        email: payload.email,
+        picture: payload.picture || '',
+        phone: localStorage.getItem('fittrack_phone') || '',
+        color: 'emerald'
+      };
+      loginUser(user);
+      showToast(`Welcome, ${payload.name}!`, 'success');
+    } catch (e) {
+      showToast('Google Sign-In failed. Please try again.', 'error');
+    }
+  };
+
+  // Callback for OAuth2 token flow (from popup button)
+  const handleOAuth2Token = async (accessToken) => {
+    try {
+      setGoogleLoading(true);
+      const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
+      const info = await res.json();
+      if (!info.email) throw new Error('No email returned');
+      const user = {
+        id: 'google-' + (info.sub || btoa(info.email).substring(0, 12)),
+        name: info.name || info.email.split('@')[0],
+        email: info.email,
+        picture: info.picture || '',
+        phone: localStorage.getItem('fittrack_phone') || '',
+        color: 'emerald'
+      };
+      loginUser(user);
+      showToast(`Welcome, ${user.name}!`, 'success');
+    } catch (e) {
+      showToast('Failed to retrieve Google profile. Please try again.', 'error');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  // Main Google button click handler
   const handleGoogleButtonClick = () => {
-    if (googleClientId && window.google?.accounts?.id) {
+    // On native app: always use simulated picker
+    if (isNativeApp()) {
+      setIsSimModalOpen(true);
+      return;
+    }
+
+    // On web: use OAuth2 popup token flow (most reliable)
+    if (googleClientId && window.google?.accounts?.oauth2) {
       try {
-        // Prompt One Tap - shows a popup, does NOT need a DOM ref
-        window.google.accounts.id.prompt((notification) => {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            // One Tap blocked (mobile webview, browser policy, etc.) - fall back to sim
-            setIsSimModalOpen(true);
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: googleClientId,
+          scope: 'email profile openid',
+          callback: (response) => {
+            if (response.error) {
+              showToast('Google Sign-In was cancelled.', 'error');
+              return;
+            }
+            handleOAuth2Token(response.access_token);
           }
         });
+        client.requestAccessToken({ prompt: 'select_account' });
+        return;
       } catch (err) {
-        console.warn('Google One Tap failed, falling back to sim:', err);
-        setIsSimModalOpen(true);
+        console.warn('OAuth2 popup failed:', err);
       }
-    } else {
-      // No client ID configured or GSI not loaded yet
-      setIsSimModalOpen(true);
     }
+
+    // Final fallback: simulated picker
+    setIsSimModalOpen(true);
   };
 
   const handleCredentialsLogin = (e) => {
@@ -167,7 +201,7 @@ export const Login = () => {
     };
     loginUser(user);
     setIsSimModalOpen(false);
-    showToast(`Signed in with Google as ${mockUser.name}`, 'success');
+    showToast(`Signed in as ${mockUser.name}`, 'success');
   };
 
   const handleGuestLogin = () => {
@@ -183,27 +217,32 @@ export const Login = () => {
     showToast('Signed in as Guest', 'success');
   };
 
-  // Reusable Google button - always visible, always clickable
+  // Reusable Google button — always visible, always works
   const GoogleButton = ({ label }) => (
     <button
       type="button"
       onClick={handleGoogleButtonClick}
-      className="w-full flex items-center justify-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/80 px-5 py-3.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] mb-4"
+      disabled={googleLoading}
+      className="w-full flex items-center justify-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/80 px-5 py-3.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] mb-4 disabled:opacity-60"
     >
-      <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      <span className="font-bold text-xs uppercase tracking-wider text-slate-200">{label}</span>
+      {googleLoading ? (
+        <Loader className="w-5 h-5 text-emerald-500 animate-spin" />
+      ) : (
+        <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+      )}
+      <span className="font-bold text-xs uppercase tracking-wider text-slate-200">
+        {googleLoading ? 'Signing in...' : label}
+      </span>
     </button>
   );
 
   return (
     <section id="loginPage" className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden bg-slate-950">
-      
-      {/* Visual background gradient accent */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-emerald-500/10 blur-[100px] pointer-events-none z-0"></div>
 
       <div className="w-full max-w-[420px] glass p-8 sm:p-10 slide-up text-center relative z-10">
@@ -220,20 +259,10 @@ export const Login = () => {
 
         {/* Tab Controls */}
         <div className="flex bg-slate-900/60 p-1 rounded-2xl border border-slate-850 mb-6">
-          <button 
-            onClick={() => setActiveTab('signin')} 
-            className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${
-              activeTab === 'signin' ? 'bg-emerald-500 text-slate-950 neon font-black' : 'text-slate-500 hover:text-slate-350'
-            }`}
-          >
+          <button onClick={() => setActiveTab('signin')} className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${activeTab === 'signin' ? 'bg-emerald-500 text-slate-950 neon' : 'text-slate-500 hover:text-slate-350'}`}>
             Sign In
           </button>
-          <button 
-            onClick={() => setActiveTab('signup')} 
-            className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${
-              activeTab === 'signup' ? 'bg-emerald-500 text-slate-950 neon font-black' : 'text-slate-500 hover:text-slate-350'
-            }`}
-          >
+          <button onClick={() => setActiveTab('signup')} className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${activeTab === 'signup' ? 'bg-emerald-500 text-slate-950 neon' : 'text-slate-500 hover:text-slate-350'}`}>
             Sign Up
           </button>
         </div>
@@ -241,104 +270,58 @@ export const Login = () => {
         {/* Sign In panel */}
         {activeTab === 'signin' ? (
           <div id="panelSignIn" className="space-y-4">
-            
             <GoogleButton label="Sign in with Google" />
-
             <div className="relative flex py-2 items-center">
               <div className="flex-grow border-t border-slate-900"></div>
-              <span className="flex-shrink mx-4 text-slate-650 text-[10px] uppercase font-black tracking-widest">or email credentials</span>
+              <span className="flex-shrink mx-4 text-slate-650 text-[10px] uppercase font-black tracking-widest">or email</span>
               <div className="flex-grow border-t border-slate-900"></div>
             </div>
-            
             <form onSubmit={handleCredentialsLogin} className="space-y-4 text-left">
-              <div className="relative">
+              <div>
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Email Address</span>
                 <div className="relative">
                   <Mail className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
-                  <input 
-                    type="email" 
-                    required 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com" 
-                    className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" 
-                  />
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
                 </div>
               </div>
-
-              <div className="relative">
+              <div>
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Password</span>
                 <div className="relative">
                   <Key className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
-                  <input 
-                    type="password" 
-                    required 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter any password" 
-                    className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" 
-                  />
+                  <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter any password" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
                 </div>
               </div>
-
-              <p className="text-[10px] text-slate-500 leading-relaxed text-center py-1">Your email identifies your profile. Data is cached locally and synced to Supabase instantly.</p>
-              
-              <button 
-                type="submit" 
-                className="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3.5 font-black uppercase tracking-wider text-slate-950 neon hover:bg-emerald-450 transition duration-300 text-xs"
-              >
+              <p className="text-[10px] text-slate-500 leading-relaxed text-center py-1">Your email identifies your profile. Data syncs to Supabase instantly.</p>
+              <button type="submit" className="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3.5 font-black uppercase tracking-wider text-slate-950 neon hover:bg-emerald-450 transition duration-300 text-xs">
                 <span>Access FitTrack</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
           </div>
         ) : (
-          /* Sign Up panel */
           <div id="panelSignUp" className="space-y-4">
-            
             <GoogleButton label="Sign up with Google" />
-
             <div className="relative flex py-2 items-center">
               <div className="flex-grow border-t border-slate-900"></div>
-              <span className="flex-shrink mx-4 text-slate-650 text-[10px] uppercase font-black tracking-widest">or register new account</span>
+              <span className="flex-shrink mx-4 text-slate-650 text-[10px] uppercase font-black tracking-widest">or register</span>
               <div className="flex-grow border-t border-slate-900"></div>
             </div>
-            
             <form onSubmit={handleSignUpCredentials} className="space-y-4 text-left">
-              <div className="relative">
+              <div>
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Email Address</span>
                 <div className="relative">
                   <Mail className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
-                  <input 
-                    type="email" 
-                    required 
-                    value={signUpEmail}
-                    onChange={(e) => setSignUpEmail(e.target.value)}
-                    placeholder="you@example.com" 
-                    className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" 
-                  />
+                  <input type="email" required value={signUpEmail} onChange={(e) => setSignUpEmail(e.target.value)} placeholder="you@example.com" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
                 </div>
               </div>
-
-              <div className="relative">
+              <div>
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Create Password</span>
                 <div className="relative">
                   <Key className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
-                  <input 
-                    type="password" 
-                    required 
-                    value={signUpPassword}
-                    onChange={(e) => setSignUpPassword(e.target.value)}
-                    placeholder="Min. 4 characters" 
-                    className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" 
-                  />
+                  <input type="password" required value={signUpPassword} onChange={(e) => setSignUpPassword(e.target.value)} placeholder="Min. 4 characters" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
                 </div>
               </div>
-
-              <button 
-                type="submit" 
-                className="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3.5 font-black uppercase tracking-wider text-slate-950 neon hover:bg-emerald-450 transition duration-300 text-xs"
-              >
+              <button type="submit" className="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3.5 font-black uppercase tracking-wider text-slate-950 neon hover:bg-emerald-450 transition duration-300 text-xs">
                 <span>Register Profile</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -348,34 +331,24 @@ export const Login = () => {
 
         {/* Guest Login */}
         <div className="mt-8 border-t border-slate-900 pt-5">
-          <button 
-            onClick={handleGuestLogin} 
-            className="text-[10px] text-emerald-400 hover:text-emerald-300 font-black tracking-widest uppercase transition-colors"
-          >
+          <button onClick={handleGuestLogin} className="text-[10px] text-emerald-400 hover:text-emerald-300 font-black tracking-widest uppercase transition-colors">
             Sign in as Guest (Offline Mode)
           </button>
         </div>
       </div>
 
-      {/* Google Account Picker / Fallback Simulator Modal */}
+      {/* Google Account Picker Modal (mobile fallback) */}
       {isSimModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
           <div className="w-full max-w-sm glass p-6 slide-up text-left">
-            
             <div className="flex items-center gap-2 mb-2 text-emerald-400">
               <Sparkles className="w-4 h-4" />
               <h3 className="text-xs font-black uppercase tracking-wider">Choose Google Account</h3>
             </div>
-            
-            <p className="text-[11px] text-slate-500 leading-relaxed mb-5">Select a profile to sign in and sync your real-time fitness data.</p>
-            
+            <p className="text-[11px] text-slate-500 leading-relaxed mb-5">Select a profile to sign in and sync your fitness data.</p>
             <div className="space-y-2 mb-6">
               {mockGoogleUsers.map((mockUser) => (
-                <button
-                  key={mockUser.email}
-                  onClick={() => handleMockGoogleLogin(mockUser)}
-                  className="w-full flex items-center gap-3.5 p-3 rounded-2xl border border-slate-800 bg-slate-900/30 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition duration-300 text-left"
-                >
+                <button key={mockUser.email} onClick={() => handleMockGoogleLogin(mockUser)} className="w-full flex items-center gap-3.5 p-3 rounded-2xl border border-slate-800 bg-slate-900/30 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition duration-300 text-left">
                   <img src={mockUser.picture} className="w-10 h-10 rounded-full object-cover border border-slate-800 flex-shrink-0" alt={mockUser.name} />
                   <div>
                     <p className="font-bold text-xs text-slate-200">{mockUser.name}</p>
@@ -384,11 +357,7 @@ export const Login = () => {
                 </button>
               ))}
             </div>
-            
-            <button 
-              onClick={() => setIsSimModalOpen(false)} 
-              className="w-full rounded-2xl border border-slate-850 bg-slate-900/80 py-3 text-xs text-slate-350 font-black uppercase tracking-wider hover:bg-slate-800 transition"
-            >
+            <button onClick={() => setIsSimModalOpen(false)} className="w-full rounded-2xl border border-slate-850 bg-slate-900/80 py-3 text-xs text-slate-350 font-black uppercase tracking-wider hover:bg-slate-800 transition">
               Cancel
             </button>
           </div>
