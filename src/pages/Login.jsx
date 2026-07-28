@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Activity, Mail, Key, ArrowRight, Sparkles, Loader } from 'lucide-react';
 
@@ -13,23 +13,20 @@ export const Login = () => {
   const [googleClientId, setGoogleClientId] = useState(null);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // Detect if running inside a Capacitor native WebView
-  const isNativeApp = () => {
-    return (
-      !!window.Capacitor ||
-      window.location.origin.startsWith('capacitor://') ||
-      window.location.origin === 'http://localhost' ||
-      window.location.origin === 'https://localhost'
-    );
-  };
+  // True when running inside Capacitor Android/iOS WebView
+  const isNativeApp = () =>
+    typeof window !== 'undefined' &&
+    (!!window.Capacitor?.isNativePlatform?.() ||
+     window.location.protocol === 'capacitor:' ||
+     (window.Capacitor && window.Capacitor.getPlatform?.() !== 'web'));
 
   const mockGoogleUsers = [
-    { name: 'Rohan Sharma', email: 'rohan.sharma@fittrack.in', color: 'emerald', picture: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?fit=crop&w=120&h=120&q=80' },
-    { name: 'Priya Patel', email: 'priya.patel@fittrack.in', color: 'purple', picture: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?fit=crop&w=120&h=120&q=80' },
-    { name: 'Amit Verma', email: 'amit.verma@fittrack.in', color: 'blue', picture: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?fit=crop&w=120&h=120&q=80' }
+    { name: 'Rohan Sharma',  email: 'rohan.sharma@fittrack.in',  color: 'emerald', picture: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?fit=crop&w=120&h=120&q=80' },
+    { name: 'Priya Patel',   email: 'priya.patel@fittrack.in',   color: 'purple',  picture: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?fit=crop&w=120&h=120&q=80' },
+    { name: 'Amit Verma',    email: 'amit.verma@fittrack.in',    color: 'blue',    picture: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?fit=crop&w=120&h=120&q=80' }
   ];
 
-  // Fetch Google Client ID from backend
+  // Fetch Google Client ID from backend config
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -46,7 +43,7 @@ export const Login = () => {
     fetchConfig();
   }, [apiBase]);
 
-  // Wait for GSI script to load, then initialize + auto-show One Tap
+  // Auto-show One Tap floating card on web page load
   useEffect(() => {
     if (!googleClientId || isNativeApp()) return;
     const init = () => {
@@ -58,10 +55,8 @@ export const Login = () => {
         cancel_on_tap_outside: true,
         context: 'signin'
       });
-      // Auto-show the floating One Tap card on page load
+      // Attempt to show floating One Tap card automatically
       window.google.accounts.id.prompt((notification) => {
-        // One Tap was suppressed — user can still click the button
-        // which will trigger OAuth2 popup as fallback
         if (notification.isNotDisplayed()) {
           console.info('One Tap not displayed:', notification.getNotDisplayedReason());
         }
@@ -71,16 +66,13 @@ export const Login = () => {
       init();
     } else {
       const interval = setInterval(() => {
-        if (window.google?.accounts?.id) {
-          init();
-          clearInterval(interval);
-        }
+        if (window.google?.accounts?.id) { init(); clearInterval(interval); }
       }, 150);
       return () => clearInterval(interval);
     }
   }, [googleClientId]);
 
-  // Callback for ID token flow (from renderButton)
+  // Decode JWT from Google ID token callback
   const handleIdTokenCallback = (response) => {
     try {
       const base64Url = response.credential.split('.')[1];
@@ -90,38 +82,36 @@ export const Login = () => {
           window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
         )
       );
-      const user = {
+      loginUser({
         id: 'google-' + payload.sub,
         name: payload.name,
         email: payload.email,
         picture: payload.picture || '',
         phone: localStorage.getItem('fittrack_phone') || '',
         color: 'emerald'
-      };
-      loginUser(user);
+      });
       showToast(`Welcome, ${payload.name}!`, 'success');
     } catch (e) {
       showToast('Google Sign-In failed. Please try again.', 'error');
     }
   };
 
-  // Callback for OAuth2 token flow (from popup button)
+  // Fetch user info via OAuth2 access token (web popup flow)
   const handleOAuth2Token = async (accessToken) => {
     try {
       setGoogleLoading(true);
       const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
       const info = await res.json();
       if (!info.email) throw new Error('No email returned');
-      const user = {
+      loginUser({
         id: 'google-' + (info.sub || btoa(info.email).substring(0, 12)),
         name: info.name || info.email.split('@')[0],
         email: info.email,
         picture: info.picture || '',
         phone: localStorage.getItem('fittrack_phone') || '',
         color: 'emerald'
-      };
-      loginUser(user);
-      showToast(`Welcome, ${user.name}!`, 'success');
+      });
+      showToast(`Welcome, ${info.name || info.email}!`, 'success');
     } catch (e) {
       showToast('Failed to retrieve Google profile. Please try again.', 'error');
     } finally {
@@ -129,65 +119,84 @@ export const Login = () => {
     }
   };
 
-  // Main Google button click handler
-  const handleGoogleButtonClick = () => {
-    // On native app: always use simulated picker
+  const handleGoogleButtonClick = async () => {
+    // ── NATIVE ANDROID / iOS ── use the native SDK plugin
     if (isNativeApp()) {
-      setIsSimModalOpen(true);
+      try {
+        setGoogleLoading(true);
+        const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+        await GoogleAuth.initialize({
+          clientId: googleClientId || '440550530049-12faefe1mupqjkfil4quibknlm4dfu4e.apps.googleusercontent.com',
+          scopes: ['profile', 'email'],
+          grantOfflineAccess: true
+        });
+        const googleUser = await GoogleAuth.signIn();
+        if (googleUser) {
+          loginUser({
+            id: 'google-' + (googleUser.id || btoa(googleUser.email).substring(0, 12)),
+            name: googleUser.name || googleUser.displayName || googleUser.email.split('@')[0],
+            email: googleUser.email,
+            picture: googleUser.imageUrl || googleUser.photoUrl || '',
+            phone: localStorage.getItem('fittrack_phone') || '',
+            color: 'emerald'
+          });
+          showToast(`Welcome, ${googleUser.name || googleUser.email}!`, 'success');
+        }
+      } catch (err) {
+        const cancelled = typeof err === 'string'
+          ? err.includes('cancel') || err.includes('Cancel')
+          : err?.message?.toLowerCase().includes('cancel') || err?.error === 'popup_closed_by_user';
+        if (!cancelled) {
+          console.warn('Native Google Sign-In failed:', err);
+          // Fall back to simulated picker if native fails
+          setIsSimModalOpen(true);
+        }
+      } finally {
+        setGoogleLoading(false);
+      }
       return;
     }
 
-    // On web: try One Tap floating card first (most elegant UX)
+    // ── WEB ── try One Tap floating card first, fall back to OAuth2 popup
     if (googleClientId && window.google?.accounts?.id) {
-      let oneTapShown = false;
       window.google.accounts.id.prompt((notification) => {
-        if (notification.isDisplayed()) {
-          oneTapShown = true;
-        }
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // One Tap suppressed — fall back to OAuth2 popup window
+          // One Tap suppressed — open OAuth2 popup window
           if (window.google?.accounts?.oauth2) {
             try {
               const client = window.google.accounts.oauth2.initTokenClient({
                 client_id: googleClientId,
                 scope: 'email profile openid',
                 callback: (response) => {
-                  if (response.error) {
-                    showToast('Google Sign-In was cancelled.', 'error');
-                    return;
-                  }
+                  if (response.error) { showToast('Google Sign-In was cancelled.', 'error'); return; }
                   handleOAuth2Token(response.access_token);
                 }
               });
               client.requestAccessToken({ prompt: 'select_account' });
               return;
-            } catch (err) {
-              console.warn('OAuth2 popup also failed:', err);
-            }
+            } catch (err) { console.warn('OAuth2 popup failed:', err); }
           }
-          // Final fallback: simulated picker
           setIsSimModalOpen(true);
         }
       });
       return;
     }
 
-    // No Google SDK at all — simulated picker
+    // No Google SDK at all
     setIsSimModalOpen(true);
   };
 
   const handleCredentialsLogin = (e) => {
     e.preventDefault();
     if (!email || !password) return;
-    const user = {
+    loginUser({
       id: 'user-' + btoa(email).substring(0, 12),
       name: email.split('@')[0],
-      email: email,
+      email,
       phone: localStorage.getItem('fittrack_phone') || '',
       color: 'emerald',
       picture: ''
-    };
-    loginUser(user);
+    });
     showToast('Logged in successfully!', 'success');
   };
 
@@ -196,51 +205,44 @@ export const Login = () => {
     const mail = signUpEmail.trim();
     const pass = signUpPassword.trim();
     if (!mail || !pass) return;
-    if (pass.length < 4) {
-      showToast('Password must be at least 4 characters long', 'error');
-      return;
-    }
+    if (pass.length < 4) { showToast('Password must be at least 4 characters long', 'error'); return; }
     const name = mail.split('@')[0];
-    const user = {
+    loginUser({
       id: 'user-' + btoa(mail).substring(0, 12),
       name: name.charAt(0).toUpperCase() + name.slice(1),
       email: mail,
       phone: '',
       color: 'emerald',
       picture: ''
-    };
-    loginUser(user);
+    });
     showToast(`Account created for ${name}!`, 'success');
   };
 
   const handleMockGoogleLogin = (mockUser) => {
-    const user = {
+    loginUser({
       id: 'user-' + btoa(mockUser.email).substring(0, 12),
       name: mockUser.name,
       email: mockUser.email,
       phone: '',
       color: mockUser.color,
       picture: mockUser.picture
-    };
-    loginUser(user);
+    });
     setIsSimModalOpen(false);
     showToast(`Signed in as ${mockUser.name}`, 'success');
   };
 
   const handleGuestLogin = () => {
-    const user = {
+    loginUser({
       id: 'guest-' + Math.random().toString(36).substring(2, 11),
       name: 'Guest User',
       email: 'guest@domain.com',
       phone: '',
       color: 'blue',
       picture: ''
-    };
-    loginUser(user);
+    });
     showToast('Signed in as Guest', 'success');
   };
 
-  // Reusable Google button — always visible, always works
   const GoogleButton = ({ label }) => (
     <button
       type="button"
@@ -269,7 +271,7 @@ export const Login = () => {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-emerald-500/10 blur-[100px] pointer-events-none z-0"></div>
 
       <div className="w-full max-w-[420px] glass p-8 sm:p-10 slide-up text-center relative z-10">
-        
+
         {/* Brand Header */}
         <div className="mb-8">
           <div className="w-14 h-14 mx-auto rounded-[20px] bg-slate-900 border border-slate-800 flex items-center justify-center mb-5 shadow-[0_4px_20px_rgba(204,255,0,0.1)]">
@@ -282,15 +284,11 @@ export const Login = () => {
 
         {/* Tab Controls */}
         <div className="flex bg-slate-900/60 p-1 rounded-2xl border border-slate-850 mb-6">
-          <button onClick={() => setActiveTab('signin')} className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${activeTab === 'signin' ? 'bg-emerald-500 text-slate-950 neon' : 'text-slate-500 hover:text-slate-350'}`}>
-            Sign In
-          </button>
-          <button onClick={() => setActiveTab('signup')} className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${activeTab === 'signup' ? 'bg-emerald-500 text-slate-950 neon' : 'text-slate-500 hover:text-slate-350'}`}>
-            Sign Up
-          </button>
+          <button onClick={() => setActiveTab('signin')} className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${activeTab === 'signin' ? 'bg-emerald-500 text-slate-950 neon' : 'text-slate-500 hover:text-slate-350'}`}>Sign In</button>
+          <button onClick={() => setActiveTab('signup')} className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 ${activeTab === 'signup' ? 'bg-emerald-500 text-slate-950 neon' : 'text-slate-500 hover:text-slate-350'}`}>Sign Up</button>
         </div>
 
-        {/* Sign In panel */}
+        {/* Sign In */}
         {activeTab === 'signin' ? (
           <div id="panelSignIn" className="space-y-4">
             <GoogleButton label="Sign in with Google" />
@@ -304,24 +302,24 @@ export const Login = () => {
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Email Address</span>
                 <div className="relative">
                   <Mail className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
+                  <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
                 </div>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Password</span>
                 <div className="relative">
                   <Key className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
-                  <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter any password" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
+                  <input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter any password" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
                 </div>
               </div>
               <p className="text-[10px] text-slate-500 leading-relaxed text-center py-1">Your email identifies your profile. Data syncs to Supabase instantly.</p>
               <button type="submit" className="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3.5 font-black uppercase tracking-wider text-slate-950 neon hover:bg-emerald-450 transition duration-300 text-xs">
-                <span>Access FitTrack</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Access FitTrack</span><ArrowRight className="w-4 h-4" />
               </button>
             </form>
           </div>
         ) : (
+          /* Sign Up */
           <div id="panelSignUp" className="space-y-4">
             <GoogleButton label="Sign up with Google" />
             <div className="relative flex py-2 items-center">
@@ -334,25 +332,24 @@ export const Login = () => {
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Email Address</span>
                 <div className="relative">
                   <Mail className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
-                  <input type="email" required value={signUpEmail} onChange={(e) => setSignUpEmail(e.target.value)} placeholder="you@example.com" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
+                  <input type="email" required value={signUpEmail} onChange={e => setSignUpEmail(e.target.value)} placeholder="you@example.com" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
                 </div>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Create Password</span>
                 <div className="relative">
                   <Key className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
-                  <input type="password" required value={signUpPassword} onChange={(e) => setSignUpPassword(e.target.value)} placeholder="Min. 4 characters" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
+                  <input type="password" required value={signUpPassword} onChange={e => setSignUpPassword(e.target.value)} placeholder="Min. 4 characters" className="w-full rounded-2xl bg-slate-900/60 border border-slate-800 pl-11 pr-4 py-3 text-xs text-white placeholder-slate-650 focus:border-emerald-500/40 transition duration-300" />
                 </div>
               </div>
               <button type="submit" className="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3.5 font-black uppercase tracking-wider text-slate-950 neon hover:bg-emerald-450 transition duration-300 text-xs">
-                <span>Register Profile</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Register Profile</span><ArrowRight className="w-4 h-4" />
               </button>
             </form>
           </div>
         )}
 
-        {/* Guest Login */}
+        {/* Guest */}
         <div className="mt-8 border-t border-slate-900 pt-5">
           <button onClick={handleGuestLogin} className="text-[10px] text-emerald-400 hover:text-emerald-300 font-black tracking-widest uppercase transition-colors">
             Sign in as Guest (Offline Mode)
@@ -360,7 +357,7 @@ export const Login = () => {
         </div>
       </div>
 
-      {/* Google Account Picker Modal (mobile fallback) */}
+      {/* Fallback Google Account Picker Modal */}
       {isSimModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
           <div className="w-full max-w-sm glass p-6 slide-up text-left">

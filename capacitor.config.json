@@ -2,5 +2,12 @@
   "appId": "com.fittrack.pro",
   "appName": "FitTrack Pro",
   "webDir": "dist",
-  "bundledWebRuntime": false
+  "bundledWebRuntime": false,
+  "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "440550530049-12faefe1mupqjkfil4quibknlm4dfu4e.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
+    }
+  }
 }

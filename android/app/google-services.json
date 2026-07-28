@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "928985920497",
+    "project_id": "onlygains-1a682",
+    "storage_bucket": "onlygains-1a682.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:928985920497:android:bcc96a3e4750069b470a50",
+        "android_client_info": {
+          "package_name": "com.fittrack.pro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "440550530049-12faefe1mupqjkfil4quibknlm4dfu4e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSB8Bxvj3eluhwRpgDqbx9irEWKxlaPBs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "440550530049-12faefe1mupqjkfil4quibknlm4dfu4e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
