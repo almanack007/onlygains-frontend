@@ -46,16 +46,25 @@ export const Login = () => {
     fetchConfig();
   }, [apiBase]);
 
-  // Wait for GSI script to load, then initialize
+  // Wait for GSI script to load, then initialize + auto-show One Tap
   useEffect(() => {
-    if (!googleClientId) return;
+    if (!googleClientId || isNativeApp()) return;
     const init = () => {
       if (!window.google?.accounts?.id) return;
       window.google.accounts.id.initialize({
         client_id: googleClientId,
         callback: handleIdTokenCallback,
         auto_select: false,
-        cancel_on_tap_outside: true
+        cancel_on_tap_outside: true,
+        context: 'signin'
+      });
+      // Auto-show the floating One Tap card on page load
+      window.google.accounts.id.prompt((notification) => {
+        // One Tap was suppressed — user can still click the button
+        // which will trigger OAuth2 popup as fallback
+        if (notification.isNotDisplayed()) {
+          console.info('One Tap not displayed:', notification.getNotDisplayedReason());
+        }
       });
     };
     if (window.google?.accounts?.id) {
@@ -128,28 +137,42 @@ export const Login = () => {
       return;
     }
 
-    // On web: use OAuth2 popup token flow (most reliable)
-    if (googleClientId && window.google?.accounts?.oauth2) {
-      try {
-        const client = window.google.accounts.oauth2.initTokenClient({
-          client_id: googleClientId,
-          scope: 'email profile openid',
-          callback: (response) => {
-            if (response.error) {
-              showToast('Google Sign-In was cancelled.', 'error');
+    // On web: try One Tap floating card first (most elegant UX)
+    if (googleClientId && window.google?.accounts?.id) {
+      let oneTapShown = false;
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isDisplayed()) {
+          oneTapShown = true;
+        }
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // One Tap suppressed — fall back to OAuth2 popup window
+          if (window.google?.accounts?.oauth2) {
+            try {
+              const client = window.google.accounts.oauth2.initTokenClient({
+                client_id: googleClientId,
+                scope: 'email profile openid',
+                callback: (response) => {
+                  if (response.error) {
+                    showToast('Google Sign-In was cancelled.', 'error');
+                    return;
+                  }
+                  handleOAuth2Token(response.access_token);
+                }
+              });
+              client.requestAccessToken({ prompt: 'select_account' });
               return;
+            } catch (err) {
+              console.warn('OAuth2 popup also failed:', err);
             }
-            handleOAuth2Token(response.access_token);
           }
-        });
-        client.requestAccessToken({ prompt: 'select_account' });
-        return;
-      } catch (err) {
-        console.warn('OAuth2 popup failed:', err);
-      }
+          // Final fallback: simulated picker
+          setIsSimModalOpen(true);
+        }
+      });
+      return;
     }
 
-    // Final fallback: simulated picker
+    // No Google SDK at all — simulated picker
     setIsSimModalOpen(true);
   };
 
