@@ -17,7 +17,7 @@ export const Navigation = () => {
 
   return (
     <nav 
-      className="fixed z-40 left-1/2 -translate-x-1/2 w-[90%] max-w-[460px] flex justify-between items-center px-2 py-2 rounded-[28px] border transition-all duration-300"
+      className="fixed z-40 left-1/2 -translate-x-1/2 w-[84%] max-w-[380px] flex justify-between items-center px-2 py-2 rounded-[28px] border transition-all duration-300"
       style={{
         bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
         background: 'rgba(26, 26, 26, 0.94)',
