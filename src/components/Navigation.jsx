@@ -8,7 +8,7 @@ export const Navigation = () => {
   const dict = translations[lang] || translations.en;
 
   const navItems = [
-    { id: 'home',      icon: Home,       label: dict.nav_home      || 'Home'      },
+    { id: 'home',      icon: Home,       label: 'Calories'   },
     { id: 'progress',  icon: TrendingUp,  label: dict.nav_progress  || 'Progress'  },
     { id: 'lens',      icon: Plus,        label: dict.nav_lens      || 'Add Food'  },
     { id: 'community', icon: Users,       label: dict.nav_community || 'Community' },

@@ -5,20 +5,20 @@ import { WaterTank } from '../components/WaterTank';
 import { motion } from 'framer-motion';
 
 const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor }) => {
-  const radius = 31;
-  const strokeWidth = 9.5;
+  const radius = 33;
+  const strokeWidth = 11.5;
   const circ = 2 * Math.PI * radius;
   const strokeDashoffset = circ - (Math.min(percent, 100) / 100) * circ;
 
   return (
-    <div className="glass p-4 flex flex-col items-center justify-between transition-all duration-300 hover:border-white/[0.12] active:scale-[0.99] select-none text-center">
+    <div className="glass p-4 aspect-square flex flex-col items-center justify-between transition-all duration-300 hover:border-white/[0.12] active:scale-[0.99] select-none text-center">
       {/* Title */}
       <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">
         {title}
       </span>
 
       {/* Progress Ring */}
-      <div className="relative flex items-center justify-center w-28 h-28 my-3">
+      <div className="relative flex items-center justify-center w-28 h-28 my-1">
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
           {/* Track Ring */}
           <circle
@@ -166,7 +166,7 @@ export const Home = () => {
           {/* 2x2 Grid of MacroCards (Directly on the page background, reduced gap) */}
           <div className="grid grid-cols-2 gap-3">
             <MacroCard
-              title={dict.nav_home || 'Energy'}
+              title="Calories"
               value={consumed}
               target={targetCalories + burned}
               unit="kcal"
