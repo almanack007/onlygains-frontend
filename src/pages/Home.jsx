@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, GlassWater, Utensils } from 'lucide-react';
+import { WaterTank } from '../components/WaterTank';
 
 // ── Concentric ring math ────────────────────────────────
 // All rings share center (cx=90, cy=90), viewBox="0 0 180 180"
@@ -230,84 +231,70 @@ export const Home = () => {
           </div>
         </div>
 
-        {/* ── Water Intake ──────────────────────────────── */}
-        <div className="glass p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-sm font-black uppercase tracking-wider text-white" data-i18n="water_intake">
-              {dict.water_intake}
-            </h2>
-            <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              {waterIntake} / {targetWater} ml
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
-            <div className="flex-1 flex flex-col items-center gap-4 w-full">
-              <div id="waterBottles" className="flex flex-wrap gap-4 items-center justify-center p-2 w-full">
-                {(() => {
-                  const bottles = [];
-                  const bottleCapacity = 1000;
-                  const fullBottles = Math.floor(waterIntake / bottleCapacity);
-                  const remainingWater = waterIntake % bottleCapacity;
-                  for (let i = 0; i < fullBottles; i++) bottles.push({ label: '1 L', percent: 100 });
-                  if (waterIntake === 0 || remainingWater > 0 || fullBottles === 0) {
-                    bottles.push({ label: `${remainingWater} ml`, percent: (remainingWater / bottleCapacity) * 100 });
-                  }
-                  return bottles.map((bottle, idx) => (
-                    <div key={idx} className="water-bottle-wrapper" onClick={() => handleAddWater(250)}>
-                      <div className="water-bottle-cap" />
-                      <div className="water-bottle-container">
-                        <div className="bottle-groove" style={{ top: '30%' }} />
-                        <div className="bottle-groove" style={{ top: '50%' }} />
-                        <div className="bottle-groove" style={{ top: '70%' }} />
-                        <div className="water-bottle-fill" style={{ height: `${bottle.percent}%` }} />
-                        <div className="absolute inset-0 flex items-center justify-center font-black text-[9px] tracking-wider text-white z-20 mix-blend-difference">
-                          {bottle.label}
-                        </div>
-                      </div>
-                    </div>
-                  ));
-                })()}
-              </div>
-              <p
-                className="text-[10px] font-extrabold uppercase tracking-wider transition cursor-pointer"
-                style={{ color: 'rgba(255,255,255,0.35)' }}
-                onClick={() => handleAddWater(250)}
-              >
-                +250ml Glass (click bottle to drink)
+        {/* ── Water Intake Redesign ─────────────────────── */}
+        <div className="glass p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-black uppercase tracking-wider text-white" data-i18n="water_intake">
+                {dict.water_intake}
+              </h2>
+              <p className="text-xs font-bold text-neutral-400 mt-0.5">
+                Remaining: {Math.max(0, targetWater - waterIntake)} ml
               </p>
             </div>
+            <div className="flex items-center gap-3">
+              <span
+                className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full"
+                style={{
+                  color: waterIntake >= targetWater ? '#9EFF3A' : '#5CC8FF',
+                  background: waterIntake >= targetWater ? 'rgba(158, 255, 58, 0.1)' : 'rgba(11, 110, 255, 0.1)',
+                  border: waterIntake >= targetWater ? '1px solid rgba(158, 255, 58, 0.2)' : '1px solid rgba(11, 110, 255, 0.2)'
+                }}
+              >
+                {waterPercent}%
+              </span>
+              <button
+                onClick={handleResetWater}
+                className="px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border border-rose-500/20 bg-rose-500/5 text-rose-400 hover:bg-rose-500/10 active:scale-95 cursor-pointer"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
 
-            <div className="flex-1 space-y-4 text-center sm:text-left w-full">
-              <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                Drinking enough water boosts protein synthesis and accelerates physical recovery.
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+          <div className="flex flex-col gap-4">
+            <WaterTank
+              currentWater={waterIntake}
+              goalWater={targetWater}
+              onAddWater={handleAddWater}
+              onResetWater={handleResetWater}
+            />
+
+            {/* Quick buttons & Info */}
+            <div className="flex items-center justify-between gap-3 w-full">
+              <div className="flex gap-2 flex-1">
                 {[250, 500].map(ml => (
                   <button
                     key={ml}
                     onClick={() => handleAddWater(ml)}
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all"
-                    style={{ background: '#2c2c2e', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-bold transition-all bg-[#2c2c2e] hover:bg-[#3a3a3c] text-white/90 border border-white/5 active:scale-95 cursor-pointer"
                   >
-                    <GlassWater className="w-3.5 h-3.5" style={{ color: '#adff2f' }} /> +{ml}ml
+                    <GlassWater className="w-3.5 h-3.5 text-[#5CC8FF]" /> +{ml}ml
                   </button>
                 ))}
                 <button
                   onClick={() => setIsWaterOpen(true)}
-                  className="px-4 py-2.5 rounded-2xl text-xs font-bold transition-all"
-                  style={{ background: '#2c2c2e', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="flex-1 py-2.5 rounded-2xl text-xs font-bold transition-all bg-[#2c2c2e] hover:bg-[#3a3a3c] text-white/90 border border-white/5 active:scale-95 cursor-pointer"
                 >
                   Custom
                 </button>
-                <button
-                  onClick={handleResetWater}
-                  className="px-4 py-2.5 rounded-2xl text-xs font-bold transition-all"
-                  style={{ background: 'rgba(244,63,94,0.08)', color: '#f43f5e', border: '1px solid rgba(244,63,94,0.2)' }}
-                >
-                  Reset
-                </button>
               </div>
+            </div>
+
+            {/* Remaining and Tip */}
+            <div className="flex items-center justify-between text-[10px] text-white/30 px-1 select-none">
+              <span>{Math.max(0, targetWater - waterIntake)} ml remaining</span>
+              <span className="italic">Drink water to boost recovery</span>
             </div>
           </div>
         </div>
