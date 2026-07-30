@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, GlassWater, Utensils } from 'lucide-react';
+import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, GlassWater, Utensils, ChevronLeft, ChevronRight } from 'lucide-react';
 import { WaterTank } from '../components/WaterTank';
 import { motion } from 'framer-motion';
 
@@ -69,8 +69,40 @@ const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor
 export const Home = () => {
   const {
     userProfile, todayLog, setTodayLog, waterIntake, setWaterIntake,
-    translations, lang, showToast, currentTotals, conversions
+    translations, lang, showToast, currentTotals, conversions,
+    viewDateKey, setViewDateKey, getTodayKey
   } = useApp();
+
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  const todayKey = getTodayKey();
+
+  const getWeekDays = () => {
+    const days = [];
+    const today = new Date();
+    
+    const dayOfWeek = today.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayOffset + (weekOffset * 7));
+    
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const dayNum = d.getDate();
+      const isSelected = dateStr === viewDateKey;
+      const isToday = dateStr === todayKey;
+      days.push({ dateStr, dayName, dayNum, isSelected, isToday, rawDate: d });
+    }
+    return days;
+  };
+
+  const weekDays = getWeekDays();
+  const middleDay = weekDays[3].rawDate;
+  const monthYearStr = middleDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   const [isExerciseOpen, setIsExerciseOpen]     = useState(false);
   const [exerciseName, setExerciseName]         = useState('');
@@ -153,6 +185,63 @@ export const Home = () => {
               ? 'You are currently behind on protein targets. We recommend adding a Greek Yogurt or scoop of protein to recover from exercises.'
               : 'Excellent macro balance today! Keep drinking water to boost protein synthesis and accelerate muscle recovery.'}
           </p>
+        </div>
+
+        {/* Minimal week-based date selector */}
+        <div className="flex flex-col py-2 select-none border-b border-white/5 pb-4">
+          {/* Header: Month/Year + Chevrons */}
+          <div className="flex items-center justify-between px-1 mb-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+              {monthYearStr}
+            </span>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setWeekOffset(prev => prev - 1)}
+                className="p-1 rounded-lg text-neutral-500 hover:text-white transition cursor-pointer hover:bg-white/5 active:scale-95"
+                title="Previous Week"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  setWeekOffset(0);
+                  setViewDateKey(todayKey);
+                }}
+                className="text-[9px] font-black uppercase tracking-widest text-neutral-500 hover:text-[#9EFF3A] transition px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/5"
+              >
+                Today
+              </button>
+              <button 
+                onClick={() => setWeekOffset(prev => prev + 1)}
+                className="p-1 rounded-lg text-neutral-500 hover:text-white transition cursor-pointer hover:bg-white/5 active:scale-95"
+                title="Next Week"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Days row */}
+          <div className="flex justify-between items-center px-1">
+            {weekDays.map((day) => (
+              <button
+                key={day.dateStr}
+                onClick={() => setViewDateKey(day.dateStr)}
+                className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-200 cursor-pointer ${
+                  day.isSelected 
+                    ? 'bg-white/5 border border-white/10 text-white font-black' 
+                    : 'text-neutral-500 hover:text-neutral-300'
+                }`}
+              >
+                <span className={`text-[9px] font-medium uppercase tracking-wider ${day.isSelected ? 'text-white' : 'text-neutral-500'}`}>
+                  {day.dayName}
+                </span>
+                <span className={`text-sm font-extrabold mt-0.5 ${day.isToday && !day.isSelected ? 'text-[#9EFF3A]' : ''}`}>
+                  {day.dayNum}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* ── Dashboard Metrics Grid ─────────────────── */}

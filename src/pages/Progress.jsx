@@ -18,7 +18,6 @@ export const Progress = () => {
   const [warningMsg, setWarningMsg] = useState('');
   const [pendingWeight, setPendingWeight] = useState(null);
 
-  const calendarRef = useRef(null);
   const calChartRef = useRef(null);
   const proteinChartRef = useRef(null);
   const waterChartRef = useRef(null);
@@ -31,14 +30,6 @@ export const Progress = () => {
 
   const dict = translations[lang] || translations.en;
   const todayKey = getTodayKey();
-
-  // Scroll active date into view
-  useEffect(() => {
-    const activeEl = calendarRef.current?.querySelector('.selected-date');
-    if (activeEl) {
-      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
-  }, [viewDateKey]);
 
   // Render last 7 days metrics helper
   const getLastSevenData = () => {
@@ -205,77 +196,8 @@ export const Progress = () => {
     }
   };
 
-  const getCalendarDays = () => {
-    const list = [];
-    const daysToDisplay = 30;
-    const parts = todayKey.split('-');
-    
-    for (let i = daysToDisplay - 1; i >= 0; i--) {
-      const d = new Date(parts[0], parts[1] - 1, parts[2]);
-      d.setDate(d.getDate() - i);
-      const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      const dayOfWeek = d.toLocaleDateString('en-US', { weekday: 'short' });
-      const dayOfMonth = d.getDate();
-      
-      const isSelected = dateStr === viewDateKey;
-      const isToday = dateStr === todayKey;
-      const dayData = historyDays.find(hd => hd.log_date.split('T')[0] === dateStr);
-      const hasData = dayData && dayData.food_log && dayData.food_log.length > 0;
-      
-      list.push({ dateStr, dayOfWeek, dayOfMonth, isSelected, isToday, hasData });
-    }
-    return list;
-  };
-
   return (
     <div id="panelProgress" className="tab-panel space-y-6 max-w-[1600px] mx-auto slide-up pb-12">
-      
-      {/* Calendar History Snapper */}
-      <div className="glass p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Calendar className="w-5 h-5 text-emerald-500" />
-            <h2 className="text-sm font-black uppercase tracking-wider text-slate-200" data-i18n="calendar_history">
-              {dict.calendar_history}
-            </h2>
-          </div>
-          <div className="flex items-center gap-3">
-            <span id="streakBadge" className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full border border-emerald-500/20 shadow-[0_0_10px_rgba(204,255,0,0.1)]">
-              🔥 {currentStreak} Day Streak
-            </span>
-            <button 
-              onClick={() => setViewDateKey(todayKey)} 
-              className="text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-emerald-500 transition bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl"
-            >
-              Today
-            </button>
-          </div>
-        </div>
-        <div 
-          ref={calendarRef} 
-          className="flex gap-3 overflow-x-auto thin-scroll pb-2 snap-x"
-        >
-          {getCalendarDays().map((day) => (
-            <button
-              key={day.dateStr}
-              onClick={() => setViewDateKey(day.dateStr)}
-              className={`flex-shrink-0 w-16 h-20 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 snap-center ${
-                day.isSelected 
-                  ? 'selected-date border-emerald-500 bg-emerald-500/10 text-emerald-300 shadow-[0_0_15px_rgba(204,255,0,0.15)] font-black scale-102'
-                  : 'bg-slate-900/40 border-slate-850 hover:border-emerald-500/30 hover:bg-slate-900 text-slate-500'
-              }`}
-            >
-              <span className={`text-[9px] uppercase font-bold tracking-widest ${day.isSelected ? 'text-emerald-400' : 'text-slate-600'}`}>
-                {day.dayOfWeek}
-              </span>
-              <span className={`text-base font-extrabold ${day.isToday && !day.isSelected ? 'text-white' : ''}`}>
-                {day.dayOfMonth}
-              </span>
-              <div className={`h-1.5 w-1.5 rounded-full mt-1 ${day.hasData ? 'bg-emerald-500 shadow-[0_0_8px_#ccff00]' : 'bg-transparent'}`}></div>
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Weight Tracking */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
