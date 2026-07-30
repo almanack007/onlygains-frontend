@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Home, TrendingUp, Plus, Users, User } from 'lucide-react';
+import { Home, TrendingUp, Camera, Users, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Navigation = () => {
@@ -10,7 +10,7 @@ export const Navigation = () => {
   const navItems = [
     { id: 'home',      icon: Home,       label: 'Calories'   },
     { id: 'progress',  icon: TrendingUp,  label: dict.nav_progress  || 'Progress'  },
-    { id: 'lens',      icon: Plus,        label: dict.nav_lens      || 'Add Food'  },
+    { id: 'lens',      icon: Camera,      label: 'Scan'  },
     { id: 'community', icon: Users,       label: dict.nav_community || 'Community' },
     { id: 'profile',   icon: User,        label: dict.nav_profile   || 'Profile'   },
   ];

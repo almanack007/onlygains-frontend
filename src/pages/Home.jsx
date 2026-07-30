@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, Utensils } from 'lucide-react';
 import { WaterTank } from '../components/WaterTank';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ManualAddFoodModal } from '../components/ManualAddFoodModal';
 
 const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor }) => {
   const radius = 32;
@@ -112,6 +113,7 @@ export const Home = () => {
   const [exerciseDuration, setExerciseDuration] = useState('');
   const [exerciseCalories, setExerciseCalories] = useState('');
   const [isWaterModalOpen, setIsWaterModalOpen] = useState(false);
+  const [isManualFoodModalOpen, setIsManualFoodModalOpen] = useState(false);
   const [goalInput, setGoalInput] = useState(2000);
   const [customWaterAmount, setCustomWaterAmount] = useState('');
   const [waterLogs, setWaterLogs] = useState(() => {
@@ -397,11 +399,19 @@ export const Home = () => {
         <div className="glass p-6">
           <div className="flex items-center justify-between gap-4 mb-5">
             <h2 className="text-sm font-black uppercase tracking-wider text-white" data-i18n="todays_meals">{dict.todays_meals}</h2>
-            {totals.foods.length > 0 && (
-              <button onClick={handleClearAll} className="text-[10px] font-black uppercase tracking-wider transition" style={{ color: '#f43f5e' }}>
-                {dict.clear_all}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsManualFoodModalOpen(true)}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#9EFF3A] hover:bg-[#8ee02e] text-slate-950 text-[10px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-[0_0_10px_rgba(158,255,58,0.1)]"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Food
               </button>
-            )}
+              {totals.foods.length > 0 && (
+                <button onClick={handleClearAll} className="text-[10px] font-black uppercase tracking-wider transition text-rose-500 hover:text-rose-450 cursor-pointer">
+                  {dict.clear_all}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2.5 max-h-[300px] overflow-y-auto thin-scroll pr-1">
@@ -691,6 +701,11 @@ export const Home = () => {
           </>
         )}
       </AnimatePresence>
+
+      <ManualAddFoodModal 
+        isOpen={isManualFoodModalOpen} 
+        onClose={() => setIsManualFoodModalOpen(false)} 
+      />
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { Camera, Search, PlusCircle, Sparkles, Loader, RotateCw, Image as ImageI
 export const Lens = () => {
   const { 
     foodDatabase, categories, conversions, todayLog, setTodayLog, 
-    apiBase, showToast, translations, lang
+    apiBase, showToast, translations, lang, setActiveTab
   } = useApp();
 
   const dict = translations[lang] || translations.en;
@@ -104,12 +104,18 @@ export const Lens = () => {
     }
   };
 
-  // Clean up camera stream on unmount
+  // Auto-start camera on mount and clean up on unmount
   useEffect(() => {
+    startCamera();
     return () => {
       stopCamera();
     };
   }, []);
+
+  const handleBack = () => {
+    stopCamera();
+    setActiveTab('home');
+  };
 
   // Filter foods based on query & category
   const getFilteredFoods = () => {
@@ -267,7 +273,7 @@ export const Lens = () => {
           {isCameraActive && (
             <div className="absolute top-0 left-0 right-0 p-4 pt-12 sm:pt-6 flex items-center justify-between z-20 bg-gradient-to-b from-black/75 to-transparent text-slate-100">
               <button 
-                onClick={stopCamera} 
+                onClick={handleBack} 
                 className="bg-black/50 hover:bg-black/75 p-2.5 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition"
               >
                 <X className="w-4 h-4" />
@@ -463,117 +469,7 @@ export const Lens = () => {
         )}
       </div>
 
-      {/* 2. Search and Custom Track list */}
-      <div className="glass rounded-[28px] p-6">
-        <h2 className="text-sm font-black uppercase tracking-wider text-slate-200 mb-4" data-i18n="add_food">{dict.add_food}</h2>
-        
-        {/* Search bar */}
-        <div className="relative mb-4">
-          <Search className="absolute left-4 top-3.5 w-4 h-4 text-slate-600" />
-          <input 
-            type="text" 
-            placeholder="Search dal, paneer, roti, banana..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-2xl bg-slate-900/80 border border-slate-800 pl-11 pr-4 py-3 text-xs text-slate-100 placeholder-slate-650"
-          />
-        </div>
 
-        {/* Categories tab scroll */}
-        <div className="flex gap-2 overflow-x-auto thin-scroll pb-2 mb-4">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`food-tab flex-shrink-0 px-3.5 py-2 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all duration-200 ${
-                activeCategory === cat 
-                  ? 'tab-active border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_rgba(204,255,0,0.15)] font-black' 
-                  : 'border-slate-850 bg-slate-900/40 text-slate-500 hover:border-slate-700 hover:text-slate-300'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* List of matched items */}
-        <div className="space-y-2 max-h-[300px] overflow-y-auto thin-scroll pr-1">
-          {getFilteredFoods().length === 0 ? (
-            <p className="text-xs text-slate-500 text-center py-8">No foods match your search criteria.</p>
-          ) : (
-            getFilteredFoods().map(([name, data]) => (
-              <button
-                key={name}
-                onClick={() => setSelectedFoodName(name)}
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-850 bg-slate-900/30 hover:border-slate-700 transition duration-200 text-left"
-              >
-                <div>
-                  <p className="font-extrabold text-xs text-slate-200">{name}</p>
-                  <p className="text-[10px] text-slate-550 mt-1 capitalize font-medium">
-                    {data.category} • {data.cal} kcal / {data.per}{data.unit}
-                  </p>
-                </div>
-                <div className="text-emerald-500 hover:scale-110 transition">
-                  <PlusCircle className="w-5 h-5" />
-                </div>
-              </button>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Serving Amount Custom Input Dialog Modal */}
-      {selectedFoodName && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm glass p-6 slide-up text-left">
-            <h3 className="font-black text-slate-200 text-sm mb-1">Add serving portion</h3>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-4 capitalize">{selectedFoodName} ({foodDatabase[selectedFoodName].category})</p>
-
-            <div className="grid grid-cols-4 gap-2 text-center text-xs mb-5">
-              <div className="bg-slate-900/60 p-2.5 rounded-2xl border border-slate-850">
-                <p className="text-[9px] text-slate-500 uppercase font-semibold">Calories</p>
-                <p className="font-bold text-slate-200 mt-0.5">{getLivePreview(foodDatabase[selectedFoodName], servingAmount, servingUnit).cal} kcal</p>
-              </div>
-              <div className="bg-slate-900/60 p-2.5 rounded-2xl border border-slate-850">
-                <p className="text-[9px] text-slate-500 uppercase font-semibold">Protein</p>
-                <p className="font-bold text-blue-400 mt-0.5">{getLivePreview(foodDatabase[selectedFoodName], servingAmount, servingUnit).protein}g</p>
-              </div>
-              <div className="bg-slate-900/60 p-2.5 rounded-2xl border border-slate-850">
-                <p className="text-[9px] text-slate-500 uppercase font-semibold">Carbs</p>
-                <p className="font-bold text-amber-500 mt-0.5">{getLivePreview(foodDatabase[selectedFoodName], servingAmount, servingUnit).carbs}g</p>
-              </div>
-              <div className="bg-slate-900/60 p-2.5 rounded-2xl border border-slate-850">
-                <p className="text-[9px] text-slate-500 uppercase font-semibold">Fat</p>
-                <p className="font-bold text-pink-500 mt-0.5">{getLivePreview(foodDatabase[selectedFoodName], servingAmount, servingUnit).fat}g</p>
-              </div>
-            </div>
-
-            <div className="flex gap-2 mb-6">
-              <input 
-                type="number"
-                value={servingAmount}
-                onChange={(e) => setServingAmount(e.target.value)}
-                className="flex-1 rounded-2xl bg-slate-900 border border-slate-800 px-3.5 py-3 text-slate-100 text-xs text-center"
-              />
-              <select 
-                value={servingUnit}
-                onChange={(e) => setServingUnit(e.target.value)}
-                className="rounded-2xl bg-slate-900 border border-slate-800 px-4 py-3 text-slate-100 text-xs"
-              >
-                <option value="g">g</option>
-                <option value="oz">oz</option>
-                <option value="cup">cup</option>
-                <option value="piece">piece</option>
-              </select>
-            </div>
-
-            <div className="flex gap-3">
-              <button onClick={() => setSelectedFoodName(null)} className="flex-1 rounded-2xl border border-slate-850 bg-slate-900/80 py-3 text-xs text-slate-350 font-black uppercase tracking-wider hover:bg-slate-800 transition">Cancel</button>
-              <button onClick={handleAddSearchFood} className="flex-1 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-3 text-xs font-black uppercase tracking-wider transition neon">Log Food</button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );
