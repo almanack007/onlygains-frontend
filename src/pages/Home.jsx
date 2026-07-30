@@ -315,6 +315,11 @@ export const Home = () => {
               >
                 {waterPercent}%
               </span>
+              {waterIntake >= targetWater && (
+                <span className="px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-[#9EFF3A]/25 bg-[#9EFF3A]/10 text-[#9EFF3A]">
+                  Goal Reached
+                </span>
+              )}
               <button
                 onClick={handleResetWater}
                 className="px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border border-rose-500/20 bg-rose-500/5 text-rose-400 hover:bg-rose-500/10 active:scale-95 cursor-pointer"

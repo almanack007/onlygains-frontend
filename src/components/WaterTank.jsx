@@ -10,8 +10,6 @@ export const WaterTank = ({
   const [isFilling, setIsFilling] = useState(false);
   const [bubbles, setBubbles] = useState([]);
   const [ripples, setRipples] = useState([]);
-  const [showGoalToast, setShowGoalToast] = useState(false);
-  const [hasShownGoalToast, setHasShownGoalToast] = useState(false);
   const fillTimerRef = useRef(null);
   
   const percentage = Math.min(Math.round((currentWater / goalWater) * 100), 100) || 0;
@@ -41,27 +39,16 @@ export const WaterTank = ({
         // Clear bubbles after 1.5s total
         setBubbles([]);
       }, 1200);
-
-      // Trigger "Goal Reached" toast only once when crossing the target
-      if (currentWater >= goalWater && !hasShownGoalToast) {
-        setShowGoalToast(true);
-        setHasShownGoalToast(true);
-        // Toast vanishes after 3 seconds
-        setTimeout(() => {
-          setShowGoalToast(false);
-        }, 3000);
-      }
     } else if (currentWater === 0 && prevWaterRef.current > 0) {
       // Draining / reset triggered
       setIsFilling(true);
-      setHasShownGoalToast(false); // Reset shown flag on clear
       if (fillTimerRef.current) clearTimeout(fillTimerRef.current);
       fillTimerRef.current = setTimeout(() => {
         setIsFilling(false);
       }, 1200);
     }
     prevWaterRef.current = currentWater;
-  }, [currentWater, goalWater, hasShownGoalToast]);
+  }, [currentWater, goalWater]);
 
   // Clean up timer on unmount
   useEffect(() => {
@@ -240,23 +227,6 @@ export const WaterTank = ({
       </motion.div>
 
       {/* Goal Reached Toast Notification at the bottom of the screen */}
-      <AnimatePresence>
-        {showGoalToast && (
-          <motion.div
-            initial={{ y: 100, opacity: 0, x: '-50%' }}
-            animate={{ y: 0, opacity: 1, x: '-50%' }}
-            exit={{ y: 100, opacity: 0, x: '-50%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-            className="fixed bottom-8 left-1/2 z-50 px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-widest shadow-2xl border border-white/10"
-            style={{
-              background: '#000000',
-              color: '#ffffff',
-            }}
-          >
-            Goal Reached 🎉
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
