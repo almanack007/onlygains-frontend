@@ -10,10 +10,11 @@ export const WaterTank = ({
   const [isFilling, setIsFilling] = useState(false);
   const [bubbles, setBubbles] = useState([]);
   const [ripples, setRipples] = useState([]);
+  const [showGoalToast, setShowGoalToast] = useState(false);
+  const [hasShownGoalToast, setHasShownGoalToast] = useState(false);
   const fillTimerRef = useRef(null);
   
   const percentage = Math.min(Math.round((currentWater / goalWater) * 100), 100) || 0;
-  const isGoalReached = currentWater >= goalWater;
   
   // Track changes to water intake to trigger animation/effects
   const prevWaterRef = useRef(currentWater);
@@ -33,23 +34,34 @@ export const WaterTank = ({
       }));
       setBubbles(prev => [...prev, ...newBubbles]);
       
-      // Reset isFilling status after animation duration (1000ms)
+      // Reset isFilling status after animation duration (1200ms)
       if (fillTimerRef.current) clearTimeout(fillTimerRef.current);
       fillTimerRef.current = setTimeout(() => {
         setIsFilling(false);
         // Clear bubbles after 1.5s total
         setBubbles([]);
       }, 1200);
+
+      // Trigger "Goal Reached" toast only once when crossing the target
+      if (currentWater >= goalWater && !hasShownGoalToast) {
+        setShowGoalToast(true);
+        setHasShownGoalToast(true);
+        // Toast vanishes after 3 seconds
+        setTimeout(() => {
+          setShowGoalToast(false);
+        }, 3000);
+      }
     } else if (currentWater === 0 && prevWaterRef.current > 0) {
       // Draining / reset triggered
       setIsFilling(true);
+      setHasShownGoalToast(false); // Reset shown flag on clear
       if (fillTimerRef.current) clearTimeout(fillTimerRef.current);
       fillTimerRef.current = setTimeout(() => {
         setIsFilling(false);
       }, 1200);
     }
     prevWaterRef.current = currentWater;
-  }, [currentWater]);
+  }, [currentWater, goalWater, hasShownGoalToast]);
 
   // Clean up timer on unmount
   useEffect(() => {
@@ -59,7 +71,6 @@ export const WaterTank = ({
   }, []);
 
   const handleTankClick = (e) => {
-    // Only register add-water from tap if it's clicked on the tank and not goal reached (optional, let them overflow if they want)
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -87,41 +98,18 @@ export const WaterTank = ({
 
   return (
     <div className="w-full flex flex-col items-center justify-center">
-      {/* Premium Glass Water Tank Container */}
+      {/* Minimalist Water Tank Container */}
       <motion.div
         onClick={handleTankClick}
         className="relative w-full h-[280px] rounded-3xl cursor-pointer overflow-hidden border backdrop-blur-md transition-all duration-500"
         style={{
           background: '#121212',
-          borderColor: isGoalReached ? 'rgba(158, 255, 58, 0.3)' : 'rgba(255, 255, 255, 0.08)',
-          boxShadow: isGoalReached
-            ? '0 0 20px rgba(106, 208, 255, 0.15), 0 0 10px rgba(158, 255, 58, 0.1)'
-            : '0 1px 3px rgba(0, 0, 0, 0.2)',
+          borderColor: 'rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
         }}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.995 }}
       >
-        {/* Goal Reached Badge */}
-        <AnimatePresence>
-          {isGoalReached && (
-            <motion.div
-              initial={{ scale: 0, y: 15, opacity: 0, x: '-50%' }}
-              animate={{ scale: 1, y: 0, opacity: 1, x: '-50%' }}
-              exit={{ scale: 0, y: 15, opacity: 0, x: '-50%' }}
-              className="absolute top-4 left-1/2 z-30 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg border"
-              style={{
-                background: 'rgba(158, 255, 58, 0.15)',
-                color: '#9EFF3A',
-                borderColor: 'rgba(158, 255, 58, 0.3)',
-                backdropFilter: 'blur(8px)',
-                boxShadow: '0 4px 15px rgba(158, 255, 58, 0.2)'
-              }}
-            >
-              Goal Reached 🎉
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Click Ripple Animations */}
         <AnimatePresence>
           {ripples.map(ripple => (
@@ -170,12 +158,12 @@ export const WaterTank = ({
 
         {/* Water Liquid Body */}
         <motion.div
-          className="absolute bottom-0 left-0 right-0 w-full transition-colors duration-500"
+          className="absolute bottom-0 left-0 right-0 w-full"
           initial={{ height: 0 }}
           animate={{ height: `${percentage}%` }}
           transition={{ duration: 1.1, ease: [0.25, 1, 0.5, 1] }} // easeOutQuart-ish
           style={{
-            backgroundColor: isGoalReached ? '#8ee0ff' : '#6ad0ff',
+            backgroundColor: '#6ad0ff',
           }}
         >
           {/* Wave Wrapper */}
@@ -188,7 +176,7 @@ export const WaterTank = ({
               transition={{ repeat: Infinity, ease: 'linear', duration: 7 }}
               className="absolute left-0 bottom-[-2px] w-[200%] h-6 opacity-30 pointer-events-none"
               style={{
-                color: isGoalReached ? '#75D5FF' : '#5CC8FF',
+                color: '#5CC8FF',
                 fill: 'currentColor',
               }}
             >
@@ -207,7 +195,7 @@ export const WaterTank = ({
               transition={{ repeat: Infinity, ease: 'linear', duration: 4 }}
               className="absolute left-0 bottom-[-2px] w-[200%] h-6 opacity-100 pointer-events-none"
               style={{
-                color: isGoalReached ? '#8ee0ff' : '#6ad0ff',
+                color: '#6ad0ff',
                 fill: 'currentColor',
               }}
             >
@@ -250,6 +238,25 @@ export const WaterTank = ({
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Goal Reached Toast Notification at the bottom of the screen */}
+      <AnimatePresence>
+        {showGoalToast && (
+          <motion.div
+            initial={{ y: 100, opacity: 0, x: '-50%' }}
+            animate={{ y: 0, opacity: 1, x: '-50%' }}
+            exit={{ y: 100, opacity: 0, x: '-50%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+            className="fixed bottom-8 left-1/2 z-50 px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-widest shadow-2xl border border-white/10"
+            style={{
+              background: '#000000',
+              color: '#ffffff',
+            }}
+          >
+            Goal Reached 🎉
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

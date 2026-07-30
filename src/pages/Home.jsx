@@ -246,9 +246,9 @@ export const Home = () => {
               <span
                 className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full"
                 style={{
-                  color: waterIntake >= targetWater ? '#9EFF3A' : '#5CC8FF',
-                  background: waterIntake >= targetWater ? 'rgba(158, 255, 58, 0.1)' : 'rgba(11, 110, 255, 0.1)',
-                  border: waterIntake >= targetWater ? '1px solid rgba(158, 255, 58, 0.2)' : '1px solid rgba(11, 110, 255, 0.2)'
+                  color: '#5CC8FF',
+                  background: 'rgba(11, 110, 255, 0.1)',
+                  border: '1px solid rgba(11, 110, 255, 0.2)'
                 }}
               >
                 {waterPercent}%
