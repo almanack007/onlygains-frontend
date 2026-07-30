@@ -95,8 +95,8 @@ export const WaterTank = ({
           background: 'rgba(255, 255, 255, 0.02)',
           borderColor: isGoalReached ? 'rgba(158, 255, 58, 0.3)' : 'rgba(255, 255, 255, 0.08)',
           boxShadow: isGoalReached
-            ? '0 0 30px rgba(11, 110, 255, 0.25), 0 0 15px rgba(158, 255, 58, 0.15), inset 0 4px 20px rgba(0, 0, 0, 0.6)'
-            : 'inset 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.05)',
+            ? '0 0 20px rgba(106, 208, 255, 0.15), 0 0 10px rgba(158, 255, 58, 0.1)'
+            : '0 1px 3px rgba(0, 0, 0, 0.2)',
         }}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.995 }}
@@ -194,9 +194,7 @@ export const WaterTank = ({
           animate={{ height: `${percentage}%` }}
           transition={{ duration: 1.1, ease: [0.25, 1, 0.5, 1] }} // easeOutQuart-ish
           style={{
-            background: isGoalReached
-              ? 'linear-gradient(to top, #0056cc 0%, #1579ff 50%, rgba(117, 213, 255, 0.75) 100%)' // Slightly brighter when reached
-              : 'linear-gradient(to top, #0B6EFF 0%, #1E88FF 50%, rgba(92, 200, 255, 0.65) 100%)',
+            backgroundColor: isGoalReached ? '#8ee0ff' : '#6ad0ff',
           }}
         >
           {/* Wave Wrapper */}
@@ -220,17 +218,16 @@ export const WaterTank = ({
               />
             </motion.svg>
 
-            {/* Front Wave (faster) */}
+            {/* Front Wave (faster, solid color matching water body) */}
             <motion.svg
               viewBox="0 0 120 28"
               preserveAspectRatio="none"
               animate={{ x: ['-50%', '0%'] }}
               transition={{ repeat: Infinity, ease: 'linear', duration: 4 }}
-              className="absolute left-0 bottom-[-2px] w-[200%] h-6 opacity-85 pointer-events-none"
+              className="absolute left-0 bottom-[-2px] w-[200%] h-6 opacity-100 pointer-events-none"
               style={{
                 color: isGoalReached ? '#8ee0ff' : '#6ad0ff',
                 fill: 'currentColor',
-                filter: 'drop-shadow(0 -1px 3px rgba(255,255,255,0.25))'
               }}
             >
               <motion.path 
