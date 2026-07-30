@@ -5,25 +5,20 @@ import { WaterTank } from '../components/WaterTank';
 import { motion } from 'framer-motion';
 
 const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor }) => {
-  const radius = 30;
-  const strokeWidth = 7;
+  const radius = 31;
+  const strokeWidth = 9.5;
   const circ = 2 * Math.PI * radius;
   const strokeDashoffset = circ - (Math.min(percent, 100) / 100) * circ;
 
   return (
-    <div 
-      className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 flex flex-col items-center justify-between transition-all duration-300 hover:border-white/[0.12] active:scale-[0.99] select-none"
-      style={{
-        boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.03)',
-      }}
-    >
+    <div className="glass p-4 flex flex-col items-center justify-between transition-all duration-300 hover:border-white/[0.12] active:scale-[0.99] select-none text-center">
       {/* Title */}
-      <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400 mb-2">
+      <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">
         {title}
       </span>
 
       {/* Progress Ring */}
-      <div className="relative flex items-center justify-center w-24 h-24 my-2">
+      <div className="relative flex items-center justify-center w-28 h-28 my-3">
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
           {/* Track Ring */}
           <circle
@@ -45,21 +40,21 @@ const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor
             strokeDasharray={circ}
             initial={{ strokeDashoffset: circ }}
             animate={{ strokeDashoffset }}
-            transition={{ type: 'spring', stiffness: 60, damping: 15 }}
+            transition={{ type: 'spring', stiffness: 50, damping: 13 }}
             strokeLinecap="round"
             style={{
-              filter: `drop-shadow(0 0 5px ${glowColor})`,
+              filter: `drop-shadow(0 0 6px ${glowColor})`,
             }}
           />
         </svg>
         {/* Center label */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm font-black text-white">{percent}%</span>
+          <span className="text-base font-extrabold text-white">{percent}%</span>
         </div>
       </div>
 
       {/* Bottom stats */}
-      <div className="text-center mt-2">
+      <div className="mt-1">
         <p className="text-xs font-black text-white">
           {value}
           <span className="text-[9px] font-bold text-neutral-500 ml-1">
@@ -161,21 +156,15 @@ export const Home = () => {
         </div>
 
         {/* ── Dashboard Metrics Grid ─────────────────── */}
-        <div className="glass p-5">
-          <div className="flex items-center justify-between mb-4">
+        <div className="pt-2 pb-1 space-y-4">
+          <div className="px-1 flex items-center justify-between">
             <h2 className="text-sm font-black uppercase tracking-wider text-white">
               Today's Energy
             </h2>
-            <span
-              className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full"
-              style={{ color: '#adff2f', background: 'rgba(173,255,47,0.1)', border: '1px solid rgba(173,255,47,0.2)' }}
-            >
-              {calPercent}% Done
-            </span>
           </div>
 
-          {/* 2x2 Grid of MacroCards */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* 2x2 Grid of MacroCards (Directly on the page background, reduced gap) */}
+          <div className="grid grid-cols-2 gap-3">
             <MacroCard
               title={dict.nav_home || 'Energy'}
               value={consumed}
@@ -212,22 +201,6 @@ export const Home = () => {
               strokeColor="#f472b6"
               glowColor="rgba(244,114,182,0.25)"
             />
-          </div>
-
-          {/* Compact summary footer */}
-          <div className="mt-5 pt-4 grid grid-cols-3 gap-2 text-center border-t border-white/5">
-            <div>
-              <p className="text-[10px] uppercase font-bold text-neutral-500 mb-0.5">{dict.target || 'Target'}</p>
-              <p className="text-xs font-black text-white">{targetCalories} kcal</p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase font-bold text-neutral-500 mb-0.5">{dict.food || 'Food'}</p>
-              <p className="text-xs font-black text-[#adff2f]">{consumed} kcal</p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase font-bold text-neutral-500 mb-0.5">{dict.burned || 'Burned'}</p>
-              <p className="text-xs font-black text-sky-400">{burned} kcal</p>
-            </div>
           </div>
         </div>
 
