@@ -114,6 +114,7 @@ export const Home = () => {
   const [exerciseCalories, setExerciseCalories] = useState('');
   const [isWaterModalOpen, setIsWaterModalOpen] = useState(false);
   const [isManualFoodModalOpen, setIsManualFoodModalOpen] = useState(false);
+  const [exactWaterInput, setExactWaterInput] = useState('');
   const [goalInput, setGoalInput] = useState(2000);
   const [customWaterAmount, setCustomWaterAmount] = useState('');
   const [waterLogs, setWaterLogs] = useState(() => {
@@ -126,6 +127,12 @@ export const Home = () => {
       setGoalInput(userProfile.water_goal);
     }
   }, [userProfile?.water_goal]);
+
+  useEffect(() => {
+    if (isWaterModalOpen) {
+      setExactWaterInput(String(waterIntake));
+    }
+  }, [isWaterModalOpen, waterIntake]);
 
   const dailyWaterLogs = waterLogs.filter(log => {
     if (!log.timestamp) return false;
@@ -183,6 +190,16 @@ export const Home = () => {
     setWaterLogs(updated);
     localStorage.setItem('fittrack_water_logs', JSON.stringify(updated));
     showToast('Deleted water log', 'info');
+  };
+  const handleUpdateExactWater = (e) => {
+    e.preventDefault();
+    const val = Number(exactWaterInput);
+    if (val < 0 || isNaN(val)) {
+      showToast('Please enter a valid amount', 'error');
+      return;
+    }
+    setWaterIntake(val);
+    showToast(`Updated exact intake to ${val} ml`, 'success');
   };
   const handleUpdateGoal = (delta) => {
     const newGoal = Math.max(250, targetWater + delta);
@@ -638,62 +655,36 @@ export const Home = () => {
                   </div>
                 </div>
 
-                {/* Custom Amount Form */}
-                <form onSubmit={handleCustomWaterAdd} className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+                {/* Update Exact Amount Form */}
+                <form onSubmit={handleUpdateExactWater} className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
                   <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">
-                    Enter Amount (ml)
+                    Update Exact Amount (ml)
                   </span>
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="e.g. 350"
-                      value={customWaterAmount}
-                      onChange={e => setCustomWaterAmount(e.target.value)}
+                      placeholder="e.g. 1250"
+                      value={exactWaterInput}
+                      onChange={e => setExactWaterInput(e.target.value)}
                       className="flex-1 bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-sm font-bold text-white focus:outline-none focus:border-[#9EFF3A]/50"
                     />
                     <button
                       type="submit"
-                      className="px-5 rounded-xl bg-[#adff2f] hover:bg-[#9ee628] text-black font-black uppercase tracking-wider text-xs active:scale-95 transition cursor-pointer"
+                      className="px-5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black uppercase tracking-wider text-xs active:scale-95 transition cursor-pointer"
                     >
-                      Add Water
+                      Update
                     </button>
                   </div>
-                </form>
-
-                {/* History list */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                      Water History
-                    </span>
+                  <div className="flex justify-between items-center mt-3 px-1">
                     <button
+                      type="button"
                       onClick={handleResetWater}
                       className="text-[9px] font-black uppercase tracking-widest text-rose-400 hover:text-rose-350 transition cursor-pointer"
                     >
                       Reset Today
                     </button>
                   </div>
-                  <div className="space-y-2 max-h-40 overflow-y-auto thin-scroll">
-                    {dailyWaterLogs.length === 0 ? (
-                      <p className="text-xs text-neutral-500 italic py-2 px-1">No water logged for this day yet.</p>
-                    ) : (
-                      dailyWaterLogs.map((log) => (
-                        <div key={log.timestamp} className="flex items-center justify-between py-2 px-3 bg-white/[0.01] border border-white/5 rounded-xl text-xs">
-                          <span className="text-neutral-400 font-bold">{log.time}</span>
-                          <div className="flex items-center gap-3">
-                            <span className="text-white font-extrabold">+{log.amount} ml</span>
-                            <button
-                              onClick={() => handleDeleteWaterLog(log.timestamp)}
-                              className="text-[10px] font-black uppercase tracking-widest text-rose-400 hover:text-rose-350 cursor-pointer"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
+                </form>
               </div>
             </motion.div>
           </>

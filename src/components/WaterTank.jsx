@@ -31,46 +31,42 @@ export const WaterTank = ({
     >
       {/* Filled progress bar */}
       <motion.div
-        className="absolute left-0 top-0 bottom-0 bg-[#5CC8FF]/30 overflow-hidden"
+        className="absolute left-0 top-0 bottom-0 bg-[#5CC8FF] overflow-visible rounded-l-full"
         animate={{ width: `${percentage}%` }}
         transition={{ type: 'spring', stiffness: 75, damping: 15 }}
       >
-        {/* High-quality water wave SVG */}
-        <svg 
-          className="absolute left-0 top-0 w-[460px] h-[18px] pointer-events-none" 
-          viewBox="0 0 100 18" 
-          preserveAspectRatio="none"
-        >
-          {/* Wave 1 */}
-          <motion.path
-            d="M 0 3 Q 25 1, 50 3 T 100 3 L 100 18 L 0 18 Z"
-            fill="#5CC8FF"
-            animate={{ 
-              y: isDisturbed ? [0, -3.5, 3, -1.8, 0.8, 0] : [0, -1, 1, -1, 0] 
-            }}
-            transition={{
-              duration: isDisturbed ? 0.9 : 3.5,
-              repeat: isDisturbed ? 0 : Infinity,
-              ease: "easeInOut"
-            }}
-          />
-          {/* Wave 2 */}
-          <motion.path
-            d="M 0 5 Q 25 6, 50 4 T 100 5 L 100 18 L 0 18 Z"
-            fill="#5CC8FF"
-            opacity="0.6"
-            animate={{ 
-              y: isDisturbed ? [0, 3, -2.5, 1.5, -0.6, 0] : [0, 0.8, -0.8, 0.8, 0] 
-            }}
-            transition={{
-              duration: isDisturbed ? 0.9 : 4.5,
-              repeat: isDisturbed ? 0 : Infinity,
-              ease: "easeInOut"
-            }}
-          />
-        </svg>
         {/* Shine highlight Sheen */}
-        <div className="absolute inset-x-0 top-0 h-[25%] bg-white/15 rounded-full" />
+        <div className="absolute inset-x-0 top-0 h-[25%] bg-white/15 rounded-full z-10" />
+
+        {/* Vertical Wave Meniscus at the end of the water section */}
+        {percentage > 0 && (
+          <div className="absolute right-0 top-0 bottom-0 w-3 pointer-events-none overflow-visible">
+            <svg className="absolute left-[-2px] top-0 h-full w-4 text-[#5CC8FF] fill-current" viewBox="0 0 16 18" preserveAspectRatio="none">
+              <motion.path
+                d="M 0 0 L 4 0 Q 8 4.5, 4 9 T 4 18 L 0 18 Z"
+                animate={{
+                  d: isDisturbed
+                    ? [
+                        "M 0 0 L 3 0 Q 12 4.5, 3 9 T 3 18 L 0 18 Z",
+                        "M 0 0 L 4 0 Q 0 4.5, 4 9 T 4 18 L 0 18 Z",
+                        "M 0 0 L 3 0 Q 9 4.5, 3 9 T 3 18 L 0 18 Z",
+                        "M 0 0 L 4 0 Q 8 4.5, 4 9 T 4 18 L 0 18 Z"
+                      ]
+                    : [
+                        "M 0 0 L 4 0 Q 8 4.5, 4 9 T 4 18 L 0 18 Z",
+                        "M 0 0 L 4 0 Q 5 4.5, 4 9 T 4 18 L 0 18 Z",
+                        "M 0 0 L 4 0 Q 8 4.5, 4 9 T 4 18 L 0 18 Z"
+                      ]
+                }}
+                transition={{
+                  duration: isDisturbed ? 0.95 : 3.8,
+                  repeat: isDisturbed ? 0 : Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            </svg>
+          </div>
+        )}
       </motion.div>
     </div>
   );
