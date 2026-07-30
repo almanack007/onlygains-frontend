@@ -2,20 +2,73 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, GlassWater, Utensils } from 'lucide-react';
 import { WaterTank } from '../components/WaterTank';
+import { motion } from 'framer-motion';
 
-// ── Concentric ring math ────────────────────────────────
-// All rings share center (cx=90, cy=90), viewBox="0 0 180 180"
-const RINGS = [
-  { key: 'cal',     label: 'Energy',  r: 72, stroke: '#adff2f', glowColor: 'rgba(173,255,47,0.5)'  },
-  { key: 'protein', label: 'Protein', r: 56, stroke: '#38bdf8', glowColor: 'rgba(56,189,248,0.5)'  },
-  { key: 'carbs',   label: 'Carbs',   r: 40, stroke: '#fbbf24', glowColor: 'rgba(251,191,36,0.5)'  },
-  { key: 'fat',     label: 'Fat',     r: 24, stroke: '#f472b6', glowColor: 'rgba(244,114,182,0.5)' },
-];
-const STROKE_W = 9;
-const getCirc  = (r) => +(2 * Math.PI * r).toFixed(2);
-const getOffset = (pct, r) => {
-  const c = getCirc(r);
-  return +(c - (c * Math.min(pct, 100)) / 100).toFixed(2);
+const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor }) => {
+  const radius = 30;
+  const strokeWidth = 7;
+  const circ = 2 * Math.PI * radius;
+  const strokeDashoffset = circ - (Math.min(percent, 100) / 100) * circ;
+
+  return (
+    <div 
+      className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 flex flex-col items-center justify-between transition-all duration-300 hover:border-white/[0.12] active:scale-[0.99] select-none"
+      style={{
+        boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.03)',
+      }}
+    >
+      {/* Title */}
+      <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400 mb-2">
+        {title}
+      </span>
+
+      {/* Progress Ring */}
+      <div className="relative flex items-center justify-center w-24 h-24 my-2">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+          {/* Track Ring */}
+          <circle
+            cx="40"
+            cy="40"
+            r={radius}
+            fill="none"
+            stroke="rgba(255, 255, 255, 0.04)"
+            strokeWidth={strokeWidth}
+          />
+          {/* Progress Ring */}
+          <motion.circle
+            cx="40"
+            cy="40"
+            r={radius}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circ}
+            initial={{ strokeDashoffset: circ }}
+            animate={{ strokeDashoffset }}
+            transition={{ type: 'spring', stiffness: 60, damping: 15 }}
+            strokeLinecap="round"
+            style={{
+              filter: `drop-shadow(0 0 5px ${glowColor})`,
+            }}
+          />
+        </svg>
+        {/* Center label */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-sm font-black text-white">{percent}%</span>
+        </div>
+      </div>
+
+      {/* Bottom stats */}
+      <div className="text-center mt-2">
+        <p className="text-xs font-black text-white">
+          {value}
+          <span className="text-[9px] font-bold text-neutral-500 ml-1">
+            / {target} {unit}
+          </span>
+        </p>
+      </div>
+    </div>
+  );
 };
 
 export const Home = () => {
@@ -50,14 +103,7 @@ export const Home = () => {
   const fatPercent     = Math.min(Math.round((totals.fat     / targetFat)      * 100), 100) || 0;
   const waterPercent   = Math.min(Math.round((waterIntake    / targetWater)    * 100), 100) || 0;
 
-  const ringPercents = { cal: calPercent, protein: proteinPercent, carbs: carbsPercent, fat: fatPercent };
 
-  const ringLegend = [
-    { ...RINGS[0], value: consumed,              target: targetCalories + burned, unit: 'kcal', pct: calPercent },
-    { ...RINGS[1], value: Math.round(totals.protein), target: targetProtein,     unit: 'g',    pct: proteinPercent },
-    { ...RINGS[2], value: Math.round(totals.carbs),   target: targetCarbs,       unit: 'g',    pct: carbsPercent },
-    { ...RINGS[3], value: Math.round(totals.fat),     target: targetFat,         unit: 'g',    pct: fatPercent },
-  ];
 
   const handleAddWater = (ml) => {
     setWaterIntake(waterIntake + ml);
@@ -114,119 +160,73 @@ export const Home = () => {
           </p>
         </div>
 
-        {/* ── Concentric Fitness Rings ─────────────────── */}
-        <div className="glass p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-sm font-black uppercase tracking-wider text-white" data-i18n="todays_energy">
-              {dict.todays_energy}
+        {/* ── Dashboard Metrics Grid ─────────────────── */}
+        <div className="glass p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-black uppercase tracking-wider text-white">
+              Today's Energy
             </h2>
             <span
-              className="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full"
+              className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full"
               style={{ color: '#adff2f', background: 'rgba(173,255,47,0.1)', border: '1px solid rgba(173,255,47,0.2)' }}
             >
               {calPercent}% Done
             </span>
           </div>
 
-          {/* Single SVG — all rings share center (90,90) */}
-          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-center">
-            <div className="relative flex-shrink-0" style={{ width: 220, height: 220 }}>
-              <svg viewBox="0 0 180 180" width="220" height="220">
-                {RINGS.map(ring => {
-                  const circ = getCirc(ring.r);
-                  const off  = getOffset(ringPercents[ring.key], ring.r);
-                  return (
-                    <g key={ring.key}>
-                      {/* Track */}
-                      <circle
-                        cx="90" cy="90" r={ring.r}
-                        fill="none"
-                        stroke="rgba(255,255,255,0.06)"
-                        strokeWidth={STROKE_W}
-                        strokeLinecap="round"
-                      />
-                      {/* Progress arc — animated via ringIn */}
-                      {ringPercents[ring.key] > 0 && (
-                        <circle
-                          cx="90" cy="90" r={ring.r}
-                          fill="none"
-                          stroke={ring.stroke}
-                          strokeWidth={STROKE_W}
-                          strokeLinecap="round"
-                          strokeDasharray={circ}
-                          style={{
-                            '--ring-total': circ,
-                            '--ring-end':   off,
-                            filter: `drop-shadow(0 0 5px ${ring.glowColor})`,
-                          }}
-                          className="ring-in"
-                        />
-                      )}
-                    </g>
-                  );
-                })}
-                {/* Center label */}
-                <text x="90" y="83" textAnchor="middle" fill="white" fontSize="22" fontWeight="800" fontFamily="Inter, sans-serif">
-                  {remaining}
-                </text>
-                <text x="90" y="98" textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="10" fontWeight="600" fontFamily="Inter, sans-serif" letterSpacing="1">
-                  KCAL LEFT
-                </text>
-                <text x="90" y="112" textAnchor="middle" fill="rgba(255,255,255,0.25)" fontSize="9" fontFamily="Inter, sans-serif">
-                  of {targetCalories}
-                </text>
-              </svg>
-            </div>
-
-            {/* Ring legend */}
-            <div className="grid grid-cols-2 gap-3 w-full sm:w-auto sm:flex sm:flex-col sm:gap-3">
-              {ringLegend.map(item => (
-                <div
-                  key={item.key}
-                  className="flex items-center gap-3 p-3 rounded-2xl"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  {/* Color swatch */}
-                  <div
-                    className="w-2.5 h-10 rounded-full flex-shrink-0"
-                    style={{ background: item.stroke, boxShadow: `0 0 8px ${item.glowColor}` }}
-                  />
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                      {item.label}
-                    </p>
-                    <p className="text-sm font-black text-white leading-none">
-                      {item.value}
-                      <span className="text-[10px] font-medium ml-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                        / {item.target} {item.unit}
-                      </span>
-                    </p>
-                    {/* Mini progress bar */}
-                    <div className="mt-1.5 h-1 rounded-full w-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                      <div
-                        className="h-1 rounded-full transition-all duration-700"
-                        style={{ width: `${item.pct}%`, background: item.stroke, boxShadow: `0 0 6px ${item.glowColor}` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* 2x2 Grid of MacroCards */}
+          <div className="grid grid-cols-2 gap-4">
+            <MacroCard
+              title={dict.nav_home || 'Energy'}
+              value={consumed}
+              target={targetCalories + burned}
+              unit="kcal"
+              percent={calPercent}
+              strokeColor="#adff2f"
+              glowColor="rgba(173,255,47,0.25)"
+            />
+            <MacroCard
+              title="Protein"
+              value={Math.round(totals.protein)}
+              target={targetProtein}
+              unit="g"
+              percent={proteinPercent}
+              strokeColor="#38bdf8"
+              glowColor="rgba(56,189,248,0.25)"
+            />
+            <MacroCard
+              title="Carbs"
+              value={Math.round(totals.carbs)}
+              target={targetCarbs}
+              unit="g"
+              percent={carbsPercent}
+              strokeColor="#fbbf24"
+              glowColor="rgba(251,191,36,0.25)"
+            />
+            <MacroCard
+              title="Fat"
+              value={Math.round(totals.fat)}
+              target={targetFat}
+              unit="g"
+              percent={fatPercent}
+              strokeColor="#f472b6"
+              glowColor="rgba(244,114,182,0.25)"
+            />
           </div>
 
-          {/* Quick summary row */}
-          <div className="mt-6 pt-5 grid grid-cols-3 gap-2 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          {/* Compact summary footer */}
+          <div className="mt-5 pt-4 grid grid-cols-3 gap-2 text-center border-t border-white/5">
             <div>
-              <p className="section-label mb-1">{dict.target}</p>
-              <p className="text-lg font-black text-white">{targetCalories}</p>
+              <p className="text-[10px] uppercase font-bold text-neutral-500 mb-0.5">{dict.target || 'Target'}</p>
+              <p className="text-xs font-black text-white">{targetCalories} kcal</p>
             </div>
             <div>
-              <p className="section-label mb-1">{dict.food}</p>
-              <p className="text-lg font-black" style={{ color: '#adff2f' }}>{consumed}</p>
+              <p className="text-[10px] uppercase font-bold text-neutral-500 mb-0.5">{dict.food || 'Food'}</p>
+              <p className="text-xs font-black text-[#adff2f]">{consumed} kcal</p>
             </div>
             <div>
-              <p className="section-label mb-1">{dict.burned}</p>
-              <p className="text-lg font-black text-sky-400">{burned}</p>
+              <p className="text-[10px] uppercase font-bold text-neutral-500 mb-0.5">{dict.burned || 'Burned'}</p>
+              <p className="text-xs font-black text-sky-400">{burned} kcal</p>
             </div>
           </div>
         </div>
