@@ -17,7 +17,7 @@ export const Navigation = () => {
 
   return (
     <nav 
-      className="fixed z-40 left-1/2 -translate-x-1/2 w-[84%] max-w-[380px] flex justify-between items-center px-2 py-2 rounded-[28px] border transition-all duration-300"
+      className="fixed z-40 left-1/2 -translate-x-1/2 w-[90%] max-w-[460px] flex justify-between items-center px-2 py-1 rounded-[24px] border transition-all duration-300"
       style={{
         bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
         background: 'rgba(26, 26, 26, 0.94)',
@@ -36,7 +36,7 @@ export const Navigation = () => {
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className="relative flex-1 flex flex-col items-center justify-center py-1.5 rounded-[20px] transition-colors cursor-pointer select-none"
+            className="relative flex-1 flex flex-col items-center justify-center py-1 rounded-[18px] transition-colors cursor-pointer select-none"
             style={{
               color: isActive ? '#9EFF3A' : 'rgba(255, 255, 255, 0.45)',
             }}
@@ -45,7 +45,7 @@ export const Navigation = () => {
             {isActive && (
               <motion.div
                 layoutId="activeTabIndicator"
-                className="absolute inset-0 rounded-[20px] z-0"
+                className="absolute inset-0 rounded-[18px] z-0"
                 style={{
                   background: 'rgba(255, 255, 255, 0.06)',
                   border: '1px solid rgba(255, 255, 255, 0.04)',
@@ -58,7 +58,7 @@ export const Navigation = () => {
             {/* Icon Wrapper (Guarantees perfect vertical alignment across all columns) */}
             <motion.div
               animate={{ scale: isActive ? 1.08 : 1.0 }}
-              className={`relative z-10 flex items-center justify-center w-9 h-9 transition-all ${
+              className={`relative z-10 flex items-center justify-center w-8 h-8 transition-all ${
                 isCenter 
                   ? 'rounded-full bg-[#9EFF3A]/10 border border-[#9EFF3A]/25 text-[#9EFF3A]' 
                   : ''
@@ -68,7 +68,7 @@ export const Navigation = () => {
             </motion.div>
 
             {/* Label (Guarantees no overflow or overlap) */}
-            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider mt-1 text-center relative z-10 select-none block max-w-full truncate px-0.5">
+            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider mt-0.5 text-center relative z-10 select-none block max-w-full truncate px-0.5">
               {item.label}
             </span>
           </button>
