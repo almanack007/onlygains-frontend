@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Settings, Bot, Sparkles } from 'lucide-react';
+import { Bot } from 'lucide-react';
 
 export const Header = () => {
   const { currentUser, userProfile, goalConfigs, syncStatus, signOut, setActiveTab, isCoachOpen, setIsCoachOpen } = useApp();
@@ -46,18 +46,9 @@ export const Header = () => {
         borderColor: isScrolled ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0)',
       }}
     >
-      {/* Left: Settings Menu Trigger */}
-      <button 
-        onClick={() => setActiveTab('profile')} 
-        className="p-2.5 rounded-full text-neutral-400 hover:text-white transition active:scale-90 cursor-pointer"
-        title="Settings"
-      >
-        <Settings className="w-5 h-5" />
-      </button>
-
-      {/* Center: Branding Logo */}
+      {/* Left: Branding Logo */}
       <div 
-        className="flex items-center gap-1.5 select-none cursor-pointer active:opacity-80 transition"
+        className="flex items-center gap-1.5 select-none cursor-pointer active:opacity-80 transition pl-1 py-1"
         onClick={() => setActiveTab('home')}
       >
         <span className="font-extrabold tracking-[0.25em] text-sm uppercase text-white font-sans">
