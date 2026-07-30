@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, GlassWater, Utensils } from 'lucide-react';
+import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, Utensils } from 'lucide-react';
 import { WaterTank } from '../components/WaterTank';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor }) => {
   const radius = 32;
@@ -111,8 +111,26 @@ export const Home = () => {
   const [exerciseName, setExerciseName]         = useState('');
   const [exerciseDuration, setExerciseDuration] = useState('');
   const [exerciseCalories, setExerciseCalories] = useState('');
-  const [isWaterOpen, setIsWaterOpen]           = useState(false);
-  const [customWater, setCustomWater]           = useState('');
+  const [isWaterModalOpen, setIsWaterModalOpen] = useState(false);
+  const [goalInput, setGoalInput] = useState(2000);
+  const [customWaterAmount, setCustomWaterAmount] = useState('');
+  const [waterLogs, setWaterLogs] = useState(() => {
+    const saved = localStorage.getItem('fittrack_water_logs');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    if (userProfile?.water_goal) {
+      setGoalInput(userProfile.water_goal);
+    }
+  }, [userProfile?.water_goal]);
+
+  const dailyWaterLogs = waterLogs.filter(log => {
+    if (!log.timestamp) return false;
+    const d = new Date(log.timestamp);
+    const logDate = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    return logDate === viewDateKey;
+  });
 
   const dict   = translations[lang] || translations.en;
   const totals = currentTotals();
@@ -137,18 +155,59 @@ export const Home = () => {
 
   const handleAddWater = (ml) => {
     setWaterIntake(waterIntake + ml);
+    const now = new Date();
+    const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    const newEntry = { timestamp: Date.now(), amount: ml, time: timeStr };
+    const updated = [newEntry, ...waterLogs];
+    setWaterLogs(updated);
+    localStorage.setItem('fittrack_water_logs', JSON.stringify(updated));
     showToast(`Added ${ml} ml of water`, 'success');
   };
-  const handleCustomWaterSubmit = (e) => {
-    e.preventDefault();
-    const val = Number(customWater);
-    if (!val || val <= 0) return;
-    setWaterIntake(waterIntake + val);
-    setCustomWater('');
-    setIsWaterOpen(false);
-    showToast(`Added ${val} ml of water`, 'success');
+  const handleResetWater = () => {
+    setWaterIntake(0);
+    const updated = waterLogs.filter(log => {
+      const logDate = new Date(log.timestamp).getFullYear() + '-' + String(new Date(log.timestamp).getMonth() + 1).padStart(2, '0') + '-' + String(new Date(log.timestamp).getDate()).padStart(2, '0');
+      return logDate !== viewDateKey;
+    });
+    setWaterLogs(updated);
+    localStorage.setItem('fittrack_water_logs', JSON.stringify(updated));
+    showToast("Reset today's water intake", 'info');
   };
-  const handleResetWater = () => { setWaterIntake(0); showToast("Reset today's water intake", 'info'); };
+  const handleDeleteWaterLog = (timestamp) => {
+    const entry = waterLogs.find(l => l.timestamp === timestamp);
+    if (!entry) return;
+    setWaterIntake(Math.max(0, waterIntake - entry.amount));
+    const updated = waterLogs.filter(l => l.timestamp !== timestamp);
+    setWaterLogs(updated);
+    localStorage.setItem('fittrack_water_logs', JSON.stringify(updated));
+    showToast('Deleted water log', 'info');
+  };
+  const handleUpdateGoal = (delta) => {
+    const newGoal = Math.max(250, targetWater + delta);
+    setGoalInput(newGoal);
+    if (userProfile) {
+      const updated = { ...userProfile, water_goal: newGoal };
+      setUserProfile(updated);
+    }
+  };
+  const handleSetGoal = (value) => {
+    const newGoal = Math.max(250, Math.min(10000, value));
+    setGoalInput(newGoal);
+    if (userProfile) {
+      const updated = { ...userProfile, water_goal: newGoal };
+      setUserProfile(updated);
+    }
+  };
+  const handleCustomWaterAdd = (e) => {
+    e.preventDefault();
+    const val = Number(customWaterAmount);
+    if (!val || val <= 0) {
+      showToast('Please enter a valid amount', 'error');
+      return;
+    }
+    handleAddWater(val);
+    setCustomWaterAmount('');
+  };
   const handleDeleteItem = (index) => {
     const updated = [...todayLog];
     const removed = updated.splice(index, 1)[0];
@@ -282,74 +341,50 @@ export const Home = () => {
         </div>
 
         {/* ── Water Intake Redesign ─────────────────────── */}
-        <div className="glass p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-black uppercase tracking-wider text-white" data-i18n="water_intake">
-                {dict.water_intake}
-              </h2>
-              <p className="text-xs font-bold text-neutral-400 mt-0.5">
-                Remaining: {Math.max(0, targetWater - waterIntake)} ml
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span
-                className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full"
-                style={{
-                  color: '#5CC8FF',
-                  background: 'rgba(11, 110, 255, 0.1)',
-                  border: '1px solid rgba(11, 110, 255, 0.2)'
-                }}
-              >
-                {waterPercent}%
-              </span>
-              {waterIntake >= targetWater && (
-                <span className="px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-[#9EFF3A]/25 bg-[#9EFF3A]/10 text-[#9EFF3A]">
-                  Goal Reached
-                </span>
-              )}
-              <button
-                onClick={handleResetWater}
-                className="px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border border-rose-500/20 bg-rose-500/5 text-rose-400 hover:bg-rose-500/10 active:scale-95 cursor-pointer"
-              >
-                Reset
-              </button>
-            </div>
+        <div className="glass p-4">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-sm font-black uppercase tracking-wider text-white">
+              {dict.water_intake}
+            </h2>
+            <span className="text-xs font-black text-neutral-450">
+              {waterIntake} / {targetWater} ml
+            </span>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <WaterTank
               currentWater={waterIntake}
               goalWater={targetWater}
               onAddWater={handleAddWater}
               onResetWater={handleResetWater}
+              onOpenModal={() => setIsWaterModalOpen(true)}
             />
 
-            {/* Quick buttons & Info */}
-            <div className="flex items-center justify-between gap-3 w-full">
-              <div className="flex gap-2 flex-1">
-                {[250, 500].map(ml => (
-                  <button
-                    key={ml}
-                    onClick={() => handleAddWater(ml)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-bold transition-all bg-[#2c2c2e] hover:bg-[#3a3a3c] text-white/90 border border-white/5 active:scale-95 cursor-pointer"
-                  >
-                    <GlassWater className="w-3.5 h-3.5 text-[#5CC8FF]" /> +{ml}ml
-                  </button>
-                ))}
-                <button
-                  onClick={() => setIsWaterOpen(true)}
-                  className="flex-1 py-2.5 rounded-2xl text-xs font-bold transition-all bg-[#2c2c2e] hover:bg-[#3a3a3c] text-white/90 border border-white/5 active:scale-95 cursor-pointer"
-                >
-                  Custom
-                </button>
-              </div>
+            {/* Remaining Info */}
+            <div className="flex items-center justify-between text-[10px] font-bold text-neutral-500 px-1 select-none">
+              <span>Remaining: {Math.max(0, targetWater - waterIntake)} ml</span>
+              {waterIntake >= targetWater && (
+                <span className="text-[#9EFF3A] uppercase tracking-wider font-black">Goal Reached</span>
+              )}
             </div>
 
-            {/* Remaining and Tip */}
-            <div className="flex items-center justify-between text-[10px] text-white/30 px-1 select-none">
-              <span>{Math.max(0, targetWater - waterIntake)} ml remaining</span>
-              <span className="italic">Drink water to boost recovery</span>
+            {/* Quick buttons & Custom row */}
+            <div className="flex items-center justify-between gap-2 w-full mt-1">
+              {[250, 500].map(ml => (
+                <button
+                  key={ml}
+                  onClick={() => handleAddWater(ml)}
+                  className="flex-1 py-2 rounded-full text-xs font-bold transition-all bg-neutral-800 hover:bg-neutral-750 text-white border border-white/5 active:scale-95 cursor-pointer"
+                >
+                  +{ml} ml
+                </button>
+              ))}
+              <button
+                onClick={() => setIsWaterModalOpen(true)}
+                className="flex-1 py-2 rounded-full text-xs font-bold transition-all bg-neutral-800 hover:bg-neutral-750 text-white border border-white/5 active:scale-95 cursor-pointer"
+              >
+                Custom
+              </button>
             </div>
           </div>
         </div>
@@ -502,33 +537,160 @@ export const Home = () => {
         </div>
       )}
 
-      {/* ── Log Water Modal ───────────────────────────────── */}
-      {isWaterOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm glass p-6 slide-up text-left">
-            <h3 className="text-sm font-black uppercase tracking-wider text-white mb-6" data-i18n="log_water">{dict.log_water}</h3>
-            <form onSubmit={handleCustomWaterSubmit} className="space-y-4">
-              <div>
-                <span className="section-label block mb-1.5" data-i18n="custom_amount">{dict.custom_amount}</span>
-                <input type="number" required placeholder="300"
-                  value={customWater} onChange={e => setCustomWater(e.target.value)} />
-              </div>
-              <div className="flex gap-3 pt-3">
-                <button type="button" onClick={() => setIsWaterOpen(false)}
-                  className="flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition"
-                  style={{ background: '#2c2c2e', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  Cancel
+      {/* ── Log Water Modal (Redesigned Screen) ───────────────────────────────── */}
+      <AnimatePresence>
+        {isWaterModalOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsWaterModalOpen(false)}
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            />
+            
+            {/* Bottom Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="fixed bottom-0 left-0 right-0 max-w-[500px] mx-auto bg-[#161616] border-t border-white/10 rounded-t-[32px] p-6 z-50 overflow-y-auto max-h-[85vh] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] text-left"
+            >
+              {/* Handlebar for dragging */}
+              <div className="w-12 h-1 bg-white/15 rounded-full mx-auto mb-4" />
+
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-base font-black uppercase tracking-wider text-white">Water Intake</h2>
+                  <p className="text-xs font-bold text-neutral-400 mt-0.5">
+                    {waterIntake} / {targetWater} ml
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsWaterModalOpen(false)}
+                  className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-black uppercase tracking-wider text-white hover:bg-white/10 active:scale-95 transition cursor-pointer"
+                >
+                  Done
                 </button>
-                <button type="submit"
-                  className="flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition neon"
-                  style={{ background: '#adff2f', color: '#000' }}>
-                  Add Water
-                </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              <div className="space-y-6">
+                {/* Daily Goal Editor */}
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">
+                    Daily Goal
+                  </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateGoal(-250)}
+                        className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white text-base font-black hover:bg-white/10 active:scale-95 transition cursor-pointer"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="250"
+                        max="10000"
+                        value={goalInput}
+                        onChange={(e) => handleSetGoal(parseInt(e.target.value) || 0)}
+                        className="w-20 bg-neutral-900 border border-white/5 rounded-xl py-2 text-center text-sm font-black text-white focus:outline-none focus:border-[#9EFF3A]/50"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateGoal(250)}
+                        className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white text-base font-black hover:bg-white/10 active:scale-95 transition cursor-pointer"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">ml</span>
+                  </div>
+                </div>
+
+                {/* Quick Add Grid */}
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-3">
+                    Quick Add
+                  </span>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[250, 500, 750, 1000].map(ml => (
+                      <button
+                        key={ml}
+                        onClick={() => handleAddWater(ml)}
+                        className="py-3 rounded-2xl bg-neutral-800 border border-white/5 hover:bg-neutral-750 text-white font-bold text-sm active:scale-95 transition cursor-pointer"
+                      >
+                        +{ml} ml
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom Amount Form */}
+                <form onSubmit={handleCustomWaterAdd} className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">
+                    Enter Amount (ml)
+                  </span>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="e.g. 350"
+                      value={customWaterAmount}
+                      onChange={e => setCustomWaterAmount(e.target.value)}
+                      className="flex-1 bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-sm font-bold text-white focus:outline-none focus:border-[#9EFF3A]/50"
+                    />
+                    <button
+                      type="submit"
+                      className="px-5 rounded-xl bg-[#adff2f] hover:bg-[#9ee628] text-black font-black uppercase tracking-wider text-xs active:scale-95 transition cursor-pointer"
+                    >
+                      Add Water
+                    </button>
+                  </div>
+                </form>
+
+                {/* History list */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                      Water History
+                    </span>
+                    <button
+                      onClick={handleResetWater}
+                      className="text-[9px] font-black uppercase tracking-widest text-rose-400 hover:text-rose-350 transition cursor-pointer"
+                    >
+                      Reset Today
+                    </button>
+                  </div>
+                  <div className="space-y-2 max-h-40 overflow-y-auto thin-scroll">
+                    {dailyWaterLogs.length === 0 ? (
+                      <p className="text-xs text-neutral-500 italic py-2 px-1">No water logged for this day yet.</p>
+                    ) : (
+                      dailyWaterLogs.map((log) => (
+                        <div key={log.timestamp} className="flex items-center justify-between py-2 px-3 bg-white/[0.01] border border-white/5 rounded-xl text-xs">
+                          <span className="text-neutral-400 font-bold">{log.time}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-white font-extrabold">+{log.amount} ml</span>
+                            <button
+                              onClick={() => handleDeleteWaterLog(log.timestamp)}
+                              className="text-[10px] font-black uppercase tracking-widest text-rose-400 hover:text-rose-350 cursor-pointer"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
