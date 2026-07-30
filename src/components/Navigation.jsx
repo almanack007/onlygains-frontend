@@ -17,10 +17,10 @@ export const Navigation = () => {
 
   return (
     <nav 
-      className="fixed z-40 left-1/2 -translate-x-1/2 w-[90%] max-w-[460px] flex justify-between items-center px-4 py-2 rounded-[30px] border transition-all duration-300"
+      className="fixed z-40 left-1/2 -translate-x-1/2 w-[90%] max-w-[460px] flex justify-between items-center px-2 py-2 rounded-[28px] border transition-all duration-300"
       style={{
         bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
-        background: 'rgba(30, 30, 30, 0.55)',
+        background: 'rgba(26, 26, 26, 0.94)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderColor: 'rgba(255, 255, 255, 0.08)',
@@ -30,63 +30,45 @@ export const Navigation = () => {
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = activeTab === item.id;
+        const isCenter = item.id === 'lens';
 
-        // Custom render for the floating center "Add Food" CTA
-        if (item.id === 'lens') {
-          return (
-            <div key={item.id} className="relative flex flex-col items-center px-2">
-              <motion.button
-                onClick={() => setActiveTab('lens')}
-                className="w-12 h-12 rounded-full flex items-center justify-center transition-all bg-gradient-to-tr from-[#1E293B] to-[#0F172A] border border-[#9EFF3A]/30 text-[#9EFF3A] shadow-[0_4px_18px_rgba(158,255,58,0.22)] active:scale-90 cursor-pointer"
-                style={{
-                  marginTop: '-24px',
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Plus className="w-6 h-6" />
-              </motion.button>
-              <span 
-                className="text-[9px] font-black uppercase tracking-widest mt-1.5 select-none transition-colors"
-                style={{
-                  color: isActive ? '#9EFF3A' : 'rgba(255, 255, 255, 0.45)',
-                }}
-              >
-                {item.label}
-              </span>
-            </div>
-          );
-        }
-
-        // Standard Tab Bar Item
         return (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className="relative flex flex-col items-center justify-center px-3 py-1.5 rounded-2xl transition-colors cursor-pointer select-none active:scale-95"
+            className="relative flex-1 flex flex-col items-center justify-center py-1.5 rounded-[20px] transition-colors cursor-pointer select-none"
             style={{
               color: isActive ? '#9EFF3A' : 'rgba(255, 255, 255, 0.45)',
             }}
           >
+            {/* Sliding Active Tab Background Capsule */}
             {isActive && (
               <motion.div
                 layoutId="activeTabIndicator"
-                className="absolute inset-0 rounded-2xl z-0"
+                className="absolute inset-0 rounded-[20px] z-0"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.07)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.05)',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.04)',
+                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.04)',
                 }}
                 transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               />
             )}
+
+            {/* Icon Wrapper (Guarantees perfect vertical alignment across all columns) */}
             <motion.div
               animate={{ scale: isActive ? 1.08 : 1.0 }}
-              className="relative z-10"
+              className={`relative z-10 flex items-center justify-center w-9 h-9 transition-all ${
+                isCenter 
+                  ? 'rounded-full bg-[#9EFF3A]/10 border border-[#9EFF3A]/25 text-[#9EFF3A]' 
+                  : ''
+              }`}
             >
               <Icon className="w-5 h-5" />
             </motion.div>
-            <span className="text-[9px] font-black uppercase tracking-widest mt-1.5 relative z-10 select-none">
+
+            {/* Label (Guarantees no overflow or overlap) */}
+            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider mt-1 text-center relative z-10 select-none block max-w-full truncate px-0.5">
               {item.label}
             </span>
           </button>

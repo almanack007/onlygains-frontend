@@ -102,15 +102,6 @@ export const AICoach = () => {
 
   return (
     <>
-      {/* Floating Orb Button */}
-      <button 
-        onClick={() => setIsCoachOpen(!isCoachOpen)} 
-        className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-slate-950 border border-emerald-500/30 text-emerald-500 shadow-[0_0_15px_rgba(204,255,0,0.15)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center z-40" 
-        title="Ask AI Coach"
-      >
-        <MessageSquare className="w-5 h-5 text-emerald-500" />
-      </button>
-
       {/* Floating Chat Overlay Panel */}
       {isCoachOpen && (
         <div className="fixed bottom-40 right-6 w-[90%] max-w-[360px] h-[420px] glass rounded-3xl border border-slate-800/80 flex flex-col z-50 shadow-[0_16px_40px_rgba(0,0,0,0.65)] slide-up">
