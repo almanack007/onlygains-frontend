@@ -92,7 +92,7 @@ export const WaterTank = ({
         onClick={handleTankClick}
         className="relative w-full h-[280px] rounded-3xl cursor-pointer overflow-hidden border backdrop-blur-md transition-all duration-500"
         style={{
-          background: 'rgba(255, 255, 255, 0.02)',
+          background: '#121212',
           borderColor: isGoalReached ? 'rgba(158, 255, 58, 0.3)' : 'rgba(255, 255, 255, 0.08)',
           boxShadow: isGoalReached
             ? '0 0 20px rgba(106, 208, 255, 0.15), 0 0 10px rgba(158, 255, 58, 0.1)'
@@ -121,25 +121,6 @@ export const WaterTank = ({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Reflections & Shimmers */}
-        {/* Left Vertical Highlight Reflection */}
-        <div 
-          className="absolute inset-y-0 left-0 w-8 pointer-events-none z-20"
-          style={{
-            background: 'linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 40%, transparent 100%)',
-            borderTopLeftRadius: '1.5rem',
-            borderBottomLeftRadius: '1.5rem',
-          }}
-        />
-
-        {/* Diagonal Gloss Shine */}
-        <div 
-          className="absolute inset-0 pointer-events-none z-20"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 25%, transparent 50%)',
-          }}
-        />
 
         {/* Click Ripple Animations */}
         <AnimatePresence>
