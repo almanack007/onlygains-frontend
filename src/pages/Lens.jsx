@@ -25,7 +25,7 @@ export const Lens = () => {
   const [lensServingUnit, setLensServingUnit] = useState('g');
 
   // Camera Live Streaming states
-  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(true);
   const [facingMode, setFacingMode] = useState('environment'); // 'user' or 'environment'
   const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
   const [cameraError, setCameraError] = useState('');
@@ -235,6 +235,7 @@ export const Lens = () => {
     setScanResult(null);
     setCapturedImage(null);
     showToast(`Logged ${amount}${lensServingUnit} of ${finalName}`, 'success');
+    setActiveTab('home');
   };
 
   // Live preview calculator helper
@@ -265,7 +266,7 @@ export const Lens = () => {
 
         {/* Viewport Frame */}
         <div className={isCameraActive 
-          ? "fixed inset-0 bg-black z-50 flex flex-col items-center justify-center overflow-hidden"
+          ? "fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center overflow-hidden"
           : "relative w-full aspect-[9/16] sm:aspect-[3/4] max-h-[550px] rounded-[24px] border border-slate-800 bg-slate-950 flex flex-col items-center justify-center overflow-hidden shadow-2xl"
         }>
           
