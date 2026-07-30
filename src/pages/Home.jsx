@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, GlassWater, Utensils, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, GlassWater, Utensils } from 'lucide-react';
 import { WaterTank } from '../components/WaterTank';
 import { motion } from 'framer-motion';
 
@@ -73,36 +73,39 @@ export const Home = () => {
     viewDateKey, setViewDateKey, getTodayKey
   } = useApp();
 
-  const [weekOffset, setWeekOffset] = useState(0);
-
   const todayKey = getTodayKey();
+  const calendarRef = useRef(null);
 
-  const getWeekDays = () => {
-    const days = [];
-    const today = new Date();
+  // Scroll active date into view
+  useEffect(() => {
+    const activeEl = calendarRef.current?.querySelector('.selected-date');
+    if (activeEl) {
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [viewDateKey]);
+
+  const getCalendarDays = () => {
+    const list = [];
+    const daysToDisplay = 30;
+    const parts = todayKey.split('-');
     
-    const dayOfWeek = today.getDay();
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    
-    const monday = new Date(today);
-    monday.setDate(today.getDate() + mondayOffset + (weekOffset * 7));
-    
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
+    for (let i = daysToDisplay - 1; i >= 0; i--) {
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      d.setDate(d.getDate() - i);
       const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
-      const dayNum = d.getDate();
+      const dayOfWeek = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const dayOfMonth = d.getDate();
+      
       const isSelected = dateStr === viewDateKey;
       const isToday = dateStr === todayKey;
-      days.push({ dateStr, dayName, dayNum, isSelected, isToday, rawDate: d });
+      list.push({ dateStr, dayOfWeek, dayOfMonth, isSelected, isToday, rawDate: d });
     }
-    return days;
+    return list;
   };
 
-  const weekDays = getWeekDays();
-  const middleDay = weekDays[3].rawDate;
-  const monthYearStr = middleDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const calendarDays = getCalendarDays();
+  const selectedDateObj = new Date(viewDateKey);
+  const monthYearStr = selectedDateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   const [isExerciseOpen, setIsExerciseOpen]     = useState(false);
   const [exerciseName, setExerciseName]         = useState('');
@@ -187,57 +190,42 @@ export const Home = () => {
           </p>
         </div>
 
-        {/* Minimal week-based date selector */}
-        <div className="flex flex-col py-2 select-none border-b border-white/5 pb-4">
-          {/* Header: Month/Year + Chevrons */}
+        {/* Minimal scrollable week date selector */}
+        <div className="flex flex-col py-2 select-none border-b border-white/5 pb-3">
+          {/* Header: Month/Year */}
           <div className="flex items-center justify-between px-1 mb-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
               {monthYearStr}
             </span>
-            <div className="flex items-center gap-1">
-              <button 
-                onClick={() => setWeekOffset(prev => prev - 1)}
-                className="p-1 rounded-lg text-neutral-500 hover:text-white transition cursor-pointer hover:bg-white/5 active:scale-95"
-                title="Previous Week"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => {
-                  setWeekOffset(0);
-                  setViewDateKey(todayKey);
-                }}
-                className="text-[9px] font-black uppercase tracking-widest text-neutral-500 hover:text-[#9EFF3A] transition px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/5"
-              >
-                Today
-              </button>
-              <button 
-                onClick={() => setWeekOffset(prev => prev + 1)}
-                className="p-1 rounded-lg text-neutral-500 hover:text-white transition cursor-pointer hover:bg-white/5 active:scale-95"
-                title="Next Week"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+            <button
+              onClick={() => setViewDateKey(todayKey)}
+              className="text-[9px] font-black uppercase tracking-widest text-neutral-500 hover:text-[#9EFF3A] transition px-1.5 py-0.5 rounded cursor-pointer hover:bg-white/5"
+            >
+              Today
+            </button>
           </div>
 
-          {/* Days row */}
-          <div className="flex justify-between items-center px-1">
-            {weekDays.map((day) => (
+          {/* Scrollable Days row */}
+          <div 
+            ref={calendarRef}
+            className="flex gap-2 overflow-x-auto thin-scroll pb-1.5 snap-x scroll-smooth"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            {calendarDays.map((day) => (
               <button
                 key={day.dateStr}
                 onClick={() => setViewDateKey(day.dateStr)}
-                className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-200 cursor-pointer ${
+                className={`flex-shrink-0 w-11 py-1.5 px-0.5 rounded-xl border transition-all duration-200 snap-center cursor-pointer flex flex-col items-center justify-center ${
                   day.isSelected 
-                    ? 'bg-white/5 border border-white/10 text-white font-black' 
-                    : 'text-neutral-500 hover:text-neutral-300'
+                    ? 'selected-date bg-white/5 border-white/10 text-white font-black' 
+                    : 'bg-transparent border-transparent text-neutral-500 hover:text-neutral-300'
                 }`}
               >
-                <span className={`text-[9px] font-medium uppercase tracking-wider ${day.isSelected ? 'text-white' : 'text-neutral-500'}`}>
-                  {day.dayName}
+                <span className={`text-[8px] font-medium uppercase tracking-wider ${day.isSelected ? 'text-white' : 'text-neutral-550'}`}>
+                  {day.dayOfWeek}
                 </span>
-                <span className={`text-sm font-extrabold mt-0.5 ${day.isToday && !day.isSelected ? 'text-[#9EFF3A]' : ''}`}>
-                  {day.dayNum}
+                <span className={`text-xs font-extrabold mt-0.5 ${day.isToday && !day.isSelected ? 'text-[#9EFF3A]' : ''}`}>
+                  {day.dayOfMonth}
                 </span>
               </button>
             ))}
