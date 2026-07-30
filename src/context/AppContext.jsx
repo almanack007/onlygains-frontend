@@ -142,6 +142,7 @@ export const AppProvider = ({ children }) => {
   const [lang, setLang] = useState(() => localStorage.getItem('fittrack_language') || 'en');
   const [activeTab, setActiveTab] = useState('home');
   const [toast, setToast] = useState(null);
+  const [isCoachOpen, setIsCoachOpen] = useState(false);
 
   // User state
   const [currentUser, setCurrentUser] = useState(() => {
@@ -533,6 +534,8 @@ export const AppProvider = ({ children }) => {
       toast,
       showToast,
       apiBase,
+      isCoachOpen,
+      setIsCoachOpen,
       syncStatus,
       setSyncStatus,
 

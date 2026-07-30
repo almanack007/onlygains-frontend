@@ -3,8 +3,7 @@ import { useApp } from '../context/AppContext';
 import { MessageSquare, Send, X, Bot } from 'lucide-react';
 
 export const AICoach = () => {
-  const { activeTab, userProfile, todayLog, waterIntake, currentTotals, apiBase, translations, lang } = useApp();
-  const [isOpen, setIsOpen] = useState(false);
+  const { activeTab, userProfile, todayLog, waterIntake, currentTotals, apiBase, translations, lang, isCoachOpen, setIsCoachOpen } = useApp();
   const [inputMsg, setInputMsg] = useState('');
   const [chatHistory, setChatHistory] = useState([
     { role: 'coach', content: 'Hi! I am your AI coach. Ask me anything about your current nutrition goals!' }
@@ -105,7 +104,7 @@ export const AICoach = () => {
     <>
       {/* Floating Orb Button */}
       <button 
-        onClick={() => setIsOpen(!isOpen)} 
+        onClick={() => setIsCoachOpen(!isCoachOpen)} 
         className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-slate-950 border border-emerald-500/30 text-emerald-500 shadow-[0_0_15px_rgba(204,255,0,0.15)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center z-40" 
         title="Ask AI Coach"
       >
@@ -113,7 +112,7 @@ export const AICoach = () => {
       </button>
 
       {/* Floating Chat Overlay Panel */}
-      {isOpen && (
+      {isCoachOpen && (
         <div className="fixed bottom-40 right-6 w-[90%] max-w-[360px] h-[420px] glass rounded-3xl border border-slate-800/80 flex flex-col z-50 shadow-[0_16px_40px_rgba(0,0,0,0.65)] slide-up">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-slate-850">
@@ -121,7 +120,7 @@ export const AICoach = () => {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#ccff00]"></span>
               <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-200">AI Personal Coach</h3>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-slate-300 p-1 transition">
+            <button onClick={() => setIsCoachOpen(false)} className="text-slate-500 hover:text-slate-300 p-1 transition">
               <X className="w-4 h-4" />
             </button>
           </div>

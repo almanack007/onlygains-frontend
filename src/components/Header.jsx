@@ -1,15 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { LogOut } from 'lucide-react';
+import { Settings, Bot, Sparkles } from 'lucide-react';
 
 export const Header = () => {
-  const { currentUser, userProfile, goalConfigs, syncStatus, signOut, setActiveTab } = useApp();
+  const { currentUser, userProfile, goalConfigs, syncStatus, signOut, setActiveTab, isCoachOpen, setIsCoachOpen } = useApp();
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  const getGoalLabel = () => {
-    if (!userProfile?.goalName) return 'None';
-    const config = goalConfigs[userProfile.goalName];
-    return config ? `${config.name} (${config.note})` : userProfile.goalName;
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 12) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const getAvatarInitials = () => {
     if (!currentUser) return 'U';
@@ -30,70 +37,69 @@ export const Header = () => {
   const av = getAvatarBg();
 
   return (
-    <header className="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4 mb-8 py-2">
-      <div className="space-y-1">
-        <p style={{ color: '#adff2f' }} className="font-brand-serif italic tracking-wider text-sm uppercase">
-          FitTrack Pro
-        </p>
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-          Today's Muscle Fuel
-        </h1>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-          <p className="text-slate-500">
-            Goal: <span className="text-slate-300 font-medium">{getGoalLabel()}</span>
-          </p>
-          <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
-          <p style={{
-            color: syncStatus.tone === 'ok'
-              ? '#adff2f'
-              : syncStatus.tone === 'warn'
-              ? '#fbbf24'
-              : 'rgba(255,255,255,0.35)'
-          }} className="font-semibold">
-            {syncStatus.message}
-          </p>
-        </div>
+    <header 
+      className="sticky top-0 z-50 transition-all duration-300 mx-[-1rem] mt-[-1.25rem] px-4 py-3 sm:mx-[-1.5rem] sm:px-6 lg:mx-[-2rem] lg:px-8 flex items-center justify-between border-b"
+      style={{
+        background: isScrolled ? 'rgba(22, 22, 22, 0.88)' : 'rgba(22, 22, 22, 0)',
+        backdropFilter: isScrolled ? 'blur(16px)' : 'blur(0px)',
+        WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'blur(0px)',
+        borderColor: isScrolled ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0)',
+      }}
+    >
+      {/* Left: Settings Menu Trigger */}
+      <button 
+        onClick={() => setActiveTab('profile')} 
+        className="p-2.5 rounded-full text-neutral-400 hover:text-white transition active:scale-90 cursor-pointer"
+        title="Settings"
+      >
+        <Settings className="w-5 h-5" />
+      </button>
+
+      {/* Center: Branding Logo */}
+      <div 
+        className="flex items-center gap-1.5 select-none cursor-pointer active:opacity-80 transition"
+        onClick={() => setActiveTab('home')}
+      >
+        <span className="font-extrabold tracking-[0.25em] text-sm uppercase text-white font-sans">
+          OnlyGains
+        </span>
       </div>
 
-      <div className="flex items-center gap-2">
-        {/* Profile button */}
-        <button
-          onClick={() => setActiveTab('profile')}
-          className="flex items-center gap-3 rounded-2xl p-2 transition-all duration-200 hover:scale-[1.02]"
-          style={{ background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.08)' }}
+      {/* Right: Actions (AI Coach Trigger + Avatar) */}
+      <div className="flex items-center gap-1">
+        <button 
+          onClick={() => setIsCoachOpen(!isCoachOpen)} 
+          className={`p-2.5 rounded-full transition active:scale-90 cursor-pointer ${
+            isCoachOpen 
+              ? 'text-[#9EFF3A] bg-white/5' 
+              : 'text-neutral-400 hover:text-white'
+          }`}
+          title="AI Coach"
+        >
+          <Bot className="w-5 h-5" />
+        </button>
+
+        {/* Profile Avatar widget */}
+        <button 
+          onClick={() => setActiveTab('profile')} 
+          className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-white/10 active:scale-90 transition cursor-pointer ml-1"
+          title="Profile"
         >
           {currentUser?.picture ? (
-            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
-                 style={{ border: '1.5px solid rgba(255,255,255,0.12)' }}>
-              <img src={currentUser.picture} className="w-full h-full object-cover"
-                   alt={currentUser.name} referrerPolicy="no-referrer" />
-            </div>
+            <img 
+              src={currentUser.picture} 
+              className="w-full h-full object-cover" 
+              alt={currentUser.name || 'Profile'} 
+              referrerPolicy="no-referrer"
+            />
           ) : (
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center font-bold flex-shrink-0 text-sm"
-              style={{ background: av.bg, border: `1.5px solid ${av.border}`, color: av.color }}
+            <div 
+              className="w-full h-full flex items-center justify-center font-black text-xs"
+              style={{ background: av.bg, color: av.color }}
             >
               {getAvatarInitials()}
             </div>
           )}
-          <div className="text-left hidden sm:block pr-2">
-            <p className="font-bold text-sm text-white">{currentUser?.name || 'User'}</p>
-            <p className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              {currentUser?.email || 'user@domain.com'}
-            </p>
-          </div>
-        </button>
-
-        {/* Sign Out */}
-        <button
-          onClick={signOut}
-          title="Sign Out"
-          className="rounded-2xl p-3 transition-all duration-200 hover:scale-[1.02] flex items-center justify-center"
-          style={{ background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#f43f5e'; e.currentTarget.style.borderColor = 'rgba(244,63,94,0.3)'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
-        >
-          <LogOut className="w-5 h-5" />
         </button>
       </div>
     </header>
