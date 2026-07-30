@@ -70,6 +70,24 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
     };
   };
 
+  const getRecentFoods = () => {
+    const logged = todayLog
+      .filter(entry => entry.type === 'food')
+      .map(entry => entry.name);
+    const unique = Array.from(new Set(logged));
+    const fallbacks = ['Banana', 'Roti / Chapati', 'Whole Milk Curd / Dahi', 'Basmati Rice Cooked'];
+    const merged = Array.from(new Set([...unique, ...fallbacks])).slice(0, 4);
+    return merged.filter(name => foodDatabase[name]);
+  };
+
+  const getFrequentFoods = () => {
+    const list = ['Chicken Breast', 'Cow Milk', 'Paneer raw', 'Daal Chawal'];
+    return list.filter(name => foodDatabase[name]);
+  };
+
+  const recentFoods = getRecentFoods();
+  const frequentFoods = getFrequentFoods();
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -116,6 +134,44 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
                 className="w-full rounded-2xl bg-neutral-900 border border-white/5 pl-11 pr-4 py-3 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#9EFF3A]/50"
               />
             </div>
+
+            {searchQuery === '' && (
+              <div className="space-y-4 mb-5">
+                {recentFoods.length > 0 && (
+                  <div>
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2">Recent Foods</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {recentFoods.map(name => (
+                        <button
+                          key={`recent-${name}`}
+                          onClick={() => setSelectedFoodName(name)}
+                          className="p-3 bg-white/[0.01] border border-white/5 hover:border-white/10 rounded-2xl text-left cursor-pointer transition"
+                        >
+                          <p className="font-extrabold text-xs text-white truncate">{name}</p>
+                          <p className="text-[9px] text-neutral-500 mt-0.5 capitalize">{foodDatabase[name]?.category} • {foodDatabase[name]?.cal} kcal</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2">Frequently Eaten</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {frequentFoods.map(name => (
+                      <button
+                        key={`frequent-${name}`}
+                        onClick={() => setSelectedFoodName(name)}
+                        className="p-3 bg-white/[0.01] border border-white/5 hover:border-white/10 rounded-2xl text-left cursor-pointer transition"
+                      >
+                        <p className="font-extrabold text-xs text-white truncate">{name}</p>
+                        <p className="text-[9px] text-neutral-500 mt-0.5 capitalize">{foodDatabase[name]?.category} • {foodDatabase[name]?.cal} kcal</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Categories */}
             <div className="flex gap-2 overflow-x-auto thin-scroll pb-2 mb-4">
