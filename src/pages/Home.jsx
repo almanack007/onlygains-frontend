@@ -5,8 +5,8 @@ import { WaterTank } from '../components/WaterTank';
 import { motion } from 'framer-motion';
 
 const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor }) => {
-  const radius = 33;
-  const strokeWidth = 11.5;
+  const radius = 32;
+  const strokeWidth = 15;
   const circ = 2 * Math.PI * radius;
   const strokeDashoffset = circ - (Math.min(percent, 100) / 100) * circ;
 
