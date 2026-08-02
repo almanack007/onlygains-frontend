@@ -461,18 +461,15 @@ export const Home = () => {
                       className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bg-[#2c2c2e] border border-white/5 hover:border-white/10"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
-                        {food.image ? (
-                          <img
-                            src={food.image}
-                            alt={food.name || food.label}
-                            className="w-10 h-10 rounded-xl object-cover border border-white/10 flex-shrink-0 bg-neutral-900"
-                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-xl bg-neutral-800 border border-white/5 grid place-items-center flex-shrink-0 text-neutral-400">
-                            <Utensils className="w-4 h-4" />
-                          </div>
-                        )}
+                        <img
+                          src={food.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80'}
+                          alt={food.name || food.label}
+                          className="w-10 h-10 rounded-xl object-cover border border-white/10 flex-shrink-0 bg-neutral-900"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
+                          }}
+                        />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="font-bold text-xs text-white truncate">{food.name || food.label}</p>

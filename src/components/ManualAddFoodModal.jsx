@@ -57,7 +57,11 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
             .map(p => {
               const name = p.product_name || p.brands || 'Product';
               const brand = p.brands || '';
-              const image = p.image_front_small_url || p.image_front_url || p.image_url || p.image_small_url || null;
+              let rawImage = p.image_front_small_url || p.image_front_thumb_url || p.image_front_url || p.image_small_url || p.image_thumb_url || p.image_url || null;
+              if (rawImage && typeof rawImage === 'string' && rawImage.startsWith('http:')) {
+                rawImage = rawImage.replace(/^http:/, 'https:');
+              }
+              const image = rawImage || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
               const n = p.nutriments || {};
               const cal = Math.round(n['energy-kcal_100g'] || n['energy-kcal_value'] || (n['energy_100g'] ? n['energy_100g'] / 4.184 : 0));
               const protein = Number((n.proteins_100g || n.proteins_value || 0).toFixed(1));
@@ -303,9 +307,15 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
                           onClick={() => handleSelectFood(food)}
                           className="p-2.5 bg-white/[0.01] border border-white/5 hover:border-white/10 rounded-2xl text-left cursor-pointer transition flex items-center gap-2.5 active:scale-[0.98]"
                         >
-                          <div className="w-9 h-9 rounded-xl bg-neutral-900 border border-white/5 overflow-hidden flex-shrink-0 grid place-items-center text-neutral-400">
-                            <Utensils className="w-4 h-4" />
-                          </div>
+                          <img
+                            src={food.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80'}
+                            alt={food.name}
+                            className="w-9 h-9 rounded-xl object-cover border border-white/10 flex-shrink-0 bg-neutral-900"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
+                            }}
+                          />
                           <div className="min-w-0 flex-1">
                             <p className="font-extrabold text-xs text-white truncate">{food.name}</p>
                             <p className="text-[9px] text-neutral-400 mt-0.5 capitalize truncate">{food.category} • {food.cal} kcal</p>
@@ -325,9 +335,15 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
                         onClick={() => handleSelectFood(food)}
                         className="p-2.5 bg-white/[0.01] border border-white/5 hover:border-white/10 rounded-2xl text-left cursor-pointer transition flex items-center gap-2.5 active:scale-[0.98]"
                       >
-                        <div className="w-9 h-9 rounded-xl bg-neutral-900 border border-white/5 overflow-hidden flex-shrink-0 grid place-items-center text-neutral-400">
-                          <Utensils className="w-4 h-4" />
-                        </div>
+                        <img
+                          src={food.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80'}
+                          alt={food.name}
+                          className="w-9 h-9 rounded-xl object-cover border border-white/10 flex-shrink-0 bg-neutral-900"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
+                          }}
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="font-extrabold text-xs text-white truncate">{food.name}</p>
                           <p className="text-[9px] text-neutral-400 mt-0.5 capitalize truncate">{food.category} • {food.cal} kcal</p>
@@ -376,15 +392,20 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
                     <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
                       {food.image ? (
                         <img 
-                          src={food.image} 
+                          src={food.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80'} 
                           alt={food.name}
                           className="w-10 h-10 rounded-xl object-cover border border-white/10 flex-shrink-0 bg-neutral-900"
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
+                          }}
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-white/5 grid place-items-center flex-shrink-0 text-neutral-400">
-                          {food.isOpenFoodFacts ? <Globe className="w-4 h-4 text-[#adff2f]" /> : <Utensils className="w-4 h-4" />}
-                        </div>
+                        <img 
+                          src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80" 
+                          alt={food.name}
+                          className="w-10 h-10 rounded-xl object-cover border border-white/10 flex-shrink-0 bg-neutral-900"
+                        />
                       )}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
@@ -418,17 +439,15 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
                 <div className="w-full max-w-sm glass p-6 slide-up text-left shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
                   <div className="flex items-center gap-3 mb-4">
-                    {selectedFoodItem.image ? (
-                      <img 
-                        src={selectedFoodItem.image} 
-                        alt={selectedFoodItem.name} 
-                        className="w-12 h-12 rounded-2xl object-cover border border-white/10 bg-neutral-900 flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-white/5 grid place-items-center flex-shrink-0 text-neutral-400">
-                        {selectedFoodItem.isOpenFoodFacts ? <Globe className="w-5 h-5 text-[#adff2f]" /> : <Utensils className="w-5 h-5" />}
-                      </div>
-                    )}
+                    <img 
+                      src={selectedFoodItem.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80'} 
+                      alt={selectedFoodItem.name} 
+                      className="w-12 h-12 rounded-2xl object-cover border border-white/10 bg-neutral-900 flex-shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
+                      }}
+                    />
                     <div className="min-w-0 flex-1">
                       <h3 className="font-black text-white text-sm truncate">{selectedFoodItem.name}</h3>
                       <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider capitalize truncate">

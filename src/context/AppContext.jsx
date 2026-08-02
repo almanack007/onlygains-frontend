@@ -88,15 +88,106 @@ const baseFoods = [
   ['Nimbu Pani', 'beverages', 30, 0.0, 7.5, 0.0, 'cup']
 ];
 
-const toFoodHelper = (f) => ({
-  category: f[1],
-  cal: f[2],
-  protein: f[3],
-  carbs: f[4],
-  fat: f[5],
-  unit: f[6] || 'g',
-  per: f[6] ? 1 : 100
-});
+const defaultFoodImages = {
+  'Daal Chawal': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?fit=crop&w=200&h=200&q=80',
+  'Paneer Butter Masala': 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?fit=crop&w=200&h=200&q=80',
+  'Butter Chicken': 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?fit=crop&w=200&h=200&q=80',
+  'Chana Masala': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?fit=crop&w=200&h=200&q=80',
+  'Chicken Biryani': 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?fit=crop&w=200&h=200&q=80',
+  'Veg Biryani': 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?fit=crop&w=200&h=200&q=80',
+  'Choole Bhature': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Dal Makhani': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?fit=crop&w=200&h=200&q=80',
+  'Palak Paneer': 'https://images.unsplash.com/photo-1610192244261-3f33de3f55e4?fit=crop&w=200&h=200&q=80',
+  'Rajma Chawal': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?fit=crop&w=200&h=200&q=80',
+  'Khichdi': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?fit=crop&w=200&h=200&q=80',
+  'Muttar Paneer': 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?fit=crop&w=200&h=200&q=80',
+  'Aloo Gobi': 'https://images.unsplash.com/photo-1610192244261-3f33de3f55e4?fit=crop&w=200&h=200&q=80',
+  'Bhindi Masala': 'https://images.unsplash.com/photo-1610192244261-3f33de3f55e4?fit=crop&w=200&h=200&q=80',
+  'Basmati Rice Cooked': 'https://images.unsplash.com/photo-1516684732162-798a0062be99?fit=crop&w=200&h=200&q=80',
+  'Brown Rice Cooked': 'https://images.unsplash.com/photo-1516684732162-798a0062be99?fit=crop&w=200&h=200&q=80',
+  'Roti / Chapati': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Tandoori Roti': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Plain Paratha': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Aloo Paratha': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Butter Naan': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Garlic Naan': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Puri': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Bhatura': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Poha': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Upma': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Idli with Sambar': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?fit=crop&w=200&h=200&q=80',
+  'Masala Dosa': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?fit=crop&w=200&h=200&q=80',
+  'Moong Dal Cooked': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?fit=crop&w=200&h=200&q=80',
+  'Masoor Dal Cooked': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?fit=crop&w=200&h=200&q=80',
+  'Soya Chunks Cooked': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80',
+  'Paneer Bhurji': 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?fit=crop&w=200&h=200&q=80',
+  'Tandoori Chicken': 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?fit=crop&w=200&h=200&q=80',
+  'Fish Tikka': 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?fit=crop&w=200&h=200&q=80',
+  'Chicken Tikka': 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?fit=crop&w=200&h=200&q=80',
+  'Egg Bhurji': 'https://images.unsplash.com/photo-1525351484163-7529414344d8?fit=crop&w=200&h=200&q=80',
+  'Boiled Egg': 'https://images.unsplash.com/photo-1525351484163-7529414344d8?fit=crop&w=200&h=200&q=80',
+  'Chicken Breast': 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?fit=crop&w=200&h=200&q=80',
+  'Mutton Curry': 'https://images.unsplash.com/photo-1544025162-d76694265947?fit=crop&w=200&h=200&q=80',
+  'Paneer raw': 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?fit=crop&w=200&h=200&q=80',
+  'Whole Milk Curd / Dahi': 'https://images.unsplash.com/photo-1488477181946-6428a0291777?fit=crop&w=200&h=200&q=80',
+  'Cow Milk': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?fit=crop&w=200&h=200&q=80',
+  'Buffalo Milk': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?fit=crop&w=200&h=200&q=80',
+  'Ghee': 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?fit=crop&w=200&h=200&q=80',
+  'Sweet Lassi': 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?fit=crop&w=200&h=200&q=80',
+  'Chaas / Buttermilk': 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?fit=crop&w=200&h=200&q=80',
+  'Banana': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?fit=crop&w=200&h=200&q=80',
+  'Apple': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?fit=crop&w=200&h=200&q=80',
+  'Mango': 'https://images.unsplash.com/photo-1553279768-865429fa0078?fit=crop&w=200&h=200&q=80',
+  'Orange': 'https://images.unsplash.com/photo-1547514701-42782101795e?fit=crop&w=200&h=200&q=80',
+  'Papaya': 'https://images.unsplash.com/photo-1517260739337-6799d239ce83?fit=crop&w=200&h=200&q=80',
+  'Samosa': 'https://images.unsplash.com/photo-1601050690597-df0568f70950?fit=crop&w=200&h=200&q=80',
+  'Dhokla': 'https://images.unsplash.com/photo-1601050690597-df0568f70950?fit=crop&w=200&h=200&q=80',
+  'Medu Vada': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?fit=crop&w=200&h=200&q=80',
+  'Pani Puri': 'https://images.unsplash.com/photo-1601050690597-df0568f70950?fit=crop&w=200&h=200&q=80',
+  'Bhel Puri': 'https://images.unsplash.com/photo-1601050690597-df0568f70950?fit=crop&w=200&h=200&q=80',
+  'Pav Bhaji': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?fit=crop&w=200&h=200&q=80',
+  'Vada Pav': 'https://images.unsplash.com/photo-1601050690597-df0568f70950?fit=crop&w=200&h=200&q=80',
+  'Roasted Chana': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80',
+  'Roasted Makhana': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80',
+  'Gulab Jamun': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?fit=crop&w=200&h=200&q=80',
+  'Rasgulla': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?fit=crop&w=200&h=200&q=80',
+  'Gajar ka Halwa': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?fit=crop&w=200&h=200&q=80',
+  'Jalebi': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?fit=crop&w=200&h=200&q=80',
+  'Besan Ladoo': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?fit=crop&w=200&h=200&q=80',
+  'Kheer': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?fit=crop&w=200&h=200&q=80',
+  'Masala Chai': 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?fit=crop&w=200&h=200&q=80',
+  'Filter Coffee': 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?fit=crop&w=200&h=200&q=80',
+  'Tender Coconut Water': 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?fit=crop&w=200&h=200&q=80',
+  'Sugarcane Juice': 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?fit=crop&w=200&h=200&q=80',
+  'Nimbu Pani': 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?fit=crop&w=200&h=200&q=80'
+};
+
+const categoryDefaultImages = {
+  meals: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80',
+  'breads & rice': 'https://images.unsplash.com/photo-1516684732162-798a0062be99?fit=crop&w=200&h=200&q=80',
+  'proteins & dals': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?fit=crop&w=200&h=200&q=80',
+  dairy: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?fit=crop&w=200&h=200&q=80',
+  fruits: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?fit=crop&w=200&h=200&q=80',
+  snacks: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?fit=crop&w=200&h=200&q=80',
+  sweets: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?fit=crop&w=200&h=200&q=80',
+  beverages: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?fit=crop&w=200&h=200&q=80'
+};
+
+const toFoodHelper = (f) => {
+  const name = f[0];
+  const cat = f[1];
+  const img = defaultFoodImages[name] || categoryDefaultImages[cat] || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
+  return {
+    category: cat,
+    cal: f[2],
+    protein: f[3],
+    carbs: f[4],
+    fat: f[5],
+    unit: f[6] || 'g',
+    per: f[6] ? 1 : 100,
+    image: img
+  };
+};
 
 const foodDatabase = {};
 baseFoods.forEach((f) => {
