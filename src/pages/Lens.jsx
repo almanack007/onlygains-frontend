@@ -228,6 +228,7 @@ export const Lens = () => {
       protein: Number((macros.protein * baseQty).toFixed(1)),
       carbs: Number((macros.carbs * baseQty).toFixed(1)),
       fat: Number((macros.fat * baseQty).toFixed(1)),
+      image: capturedImage || null,
       timestamp: Date.now()
     };
 
