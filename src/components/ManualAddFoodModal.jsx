@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Search, PlusCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +16,17 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
   const [selectedFoodName, setSelectedFoodName] = useState(null);
   const [servingAmount, setServingAmount] = useState('100');
   const [servingUnit, setServingUnit] = useState('g');
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   // Filter foods based on query & category
   const getFilteredFoods = () => {

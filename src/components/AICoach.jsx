@@ -23,6 +23,17 @@ export const AICoach = () => {
     scrollToBottom();
   }, [chatHistory, isTyping]);
 
+  useEffect(() => {
+    if (isCoachOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isCoachOpen]);
+
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
     const query = inputMsg.trim();

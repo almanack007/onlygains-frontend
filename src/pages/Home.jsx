@@ -138,6 +138,18 @@ export const Home = () => {
     }
   }, [isWaterModalOpen, waterIntake]);
 
+  // Lock body scroll when any modal is active
+  useEffect(() => {
+    if (isWaterModalOpen || isManualFoodModalOpen || isExerciseOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isWaterModalOpen, isManualFoodModalOpen, isExerciseOpen]);
+
   const dict   = translations[lang] || translations.en;
   const totals = currentTotals();
 
@@ -677,21 +689,21 @@ export const Home = () => {
                 </div>
 
                 {/* Update Exact Amount Form */}
-                <form onSubmit={handleUpdateExactWater} className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+                <form onSubmit={handleUpdateExactWater} className="bg-white/[0.02] border border-white/5 rounded-2xl p-3.5 sm:p-4 w-full box-border">
                   <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">
                     Update Exact Amount (ml)
                   </span>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2 w-full">
                     <input
                       type="number"
                       placeholder="e.g. 1250"
                       value={exactWaterInput}
                       onChange={e => setExactWaterInput(e.target.value)}
-                      className="flex-1 bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-sm font-bold text-white focus:outline-none focus:border-[#adff2f]/50"
+                      className="min-w-0 flex-1 bg-neutral-900 border border-white/5 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-[#adff2f]/50"
                     />
                     <button
                       type="submit"
-                      className="px-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black uppercase tracking-wider text-xs active:scale-95 transition cursor-pointer"
+                      className="flex-shrink-0 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black uppercase tracking-wider text-xs active:scale-95 transition cursor-pointer whitespace-nowrap"
                     >
                       Update
                     </button>
