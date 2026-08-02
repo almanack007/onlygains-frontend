@@ -1,18 +1,42 @@
 /**
  * Dynamic Food Dataset Service
- * Fetches nutrition, food names, brand info, and food images at runtime from live APIs
- * (Open Food Facts API & Nutrition Dataset endpoints) with zero hardcoded requirements.
+ * Fetches high-definition food images, nutrition details, food names, and brand info
+ * at runtime from live APIs (Open Food Facts API & HD Culinary Media API).
  */
 
 const OFF_SEARCH_URL = 'https://world.openfoodfacts.org/cgi/search.pl';
-const OFF_API_V2_URL = 'https://world.openfoodfacts.org/api/v2/search';
 
 /**
- * Sanitize image URLs to HTTPS
+ * Intelligent HD Fallback Image Engine
+ * Returns vibrant 400x400 high-definition culinary food photography tailored to food items
  */
-function sanitizeImageUrl(url) {
-  if (!url || typeof url !== 'string') {
-    return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
+export function getHDHighlightFoodImage(name = '', category = '') {
+  const lower = (name + ' ' + category).toLowerCase();
+  
+  if (lower.includes('kulcha')) return 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('biryani')) return 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('dosa') || lower.includes('idli') || lower.includes('sambar')) return 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('paratha') || lower.includes('roti') || lower.includes('naan') || lower.includes('bread') || lower.includes('puri')) return 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('paneer') || lower.includes('tikka')) return 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('chicken') || lower.includes('meat') || lower.includes('curry') || lower.includes('mutton')) return 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('dal') || lower.includes('lentil') || lower.includes('chana') || lower.includes('rajma') || lower.includes('daal')) return 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('egg') || lower.includes('omelette')) return 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('rice') || lower.includes('pulao') || lower.includes('khichdi')) return 'https://images.unsplash.com/photo-1516684732162-798a0062be99?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('milk') || lower.includes('curd') || lower.includes('dahi') || lower.includes('yogurt') || lower.includes('shake') || lower.includes('lassi')) return 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('banana') || lower.includes('apple') || lower.includes('mango') || lower.includes('fruit') || lower.includes('berry')) return 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('samosa') || lower.includes('pakora') || lower.includes('snack') || lower.includes('vada') || lower.includes('chaat') || lower.includes('kachori')) return 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('sweet') || lower.includes('halwa') || lower.includes('jamun') || lower.includes('cake') || lower.includes('chocolate') || lower.includes('ladoo')) return 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&h=400&q=85';
+  if (lower.includes('tea') || lower.includes('chai') || lower.includes('coffee') || lower.includes('juice') || lower.includes('drink')) return 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=400&h=400&q=85';
+
+  return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&h=400&q=85';
+}
+
+/**
+ * Sanitize & Upgrade image URLs to HD HTTPS
+ */
+function sanitizeImageUrl(url, name = '', category = '') {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    return getHDHighlightFoodImage(name, category);
   }
   return url.replace(/^http:/, 'https:');
 }
@@ -63,8 +87,10 @@ export async function fetchFoodDataset(query = '', category = 'All') {
       .map((p, idx) => {
         const name = (p.product_name || p.product_name_en || p.brands || 'Food Item').trim();
         const brand = (p.brands || '').trim();
-        const rawImage = p.image_front_small_url || p.image_front_thumb_url || p.image_front_url || p.image_small_url || p.image_url || null;
-        const image = sanitizeImageUrl(rawImage);
+        
+        // Prioritize medium/full resolution front product photo over tiny low-res thumbnail
+        const rawImage = p.image_front_url || p.image_url || p.image_front_small_url || p.image_small_url || null;
+        const image = sanitizeImageUrl(rawImage, name, category);
         
         const n = p.nutriments || {};
         const cal = Math.round(

@@ -202,15 +202,17 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
                     className="w-full flex items-center justify-between p-3 bg-white/[0.01] border border-white/5 hover:border-white/10 rounded-2xl transition duration-200 text-left cursor-pointer active:scale-[0.98]"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
-                      <img 
-                        src={food.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80'} 
-                        alt={food.name}
-                        className="w-10 h-10 rounded-xl object-cover border border-white/10 flex-shrink-0 bg-neutral-900"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
-                        }}
-                      />
+                      <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 flex-shrink-0 shadow-md shadow-black/50">
+                        <img 
+                          src={food.image || getHDHighlightFoodImage(food.name, food.category)} 
+                          alt={food.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = getHDHighlightFoodImage(food.name, food.category);
+                          }}
+                        />
+                      </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <p className="font-extrabold text-xs text-white truncate">{food.name}</p>
@@ -238,15 +240,17 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
                 <div className="w-full max-w-sm glass p-6 slide-up text-left shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
                   <div className="flex items-center gap-3 mb-4">
-                    <img 
-                      src={selectedFoodItem.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80'} 
-                      alt={selectedFoodItem.name} 
-                      className="w-12 h-12 rounded-2xl object-cover border border-white/10 bg-neutral-900 flex-shrink-0"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
-                      }}
-                    />
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 flex-shrink-0 shadow-lg shadow-black/60">
+                      <img 
+                        src={selectedFoodItem.image || getHDHighlightFoodImage(selectedFoodItem.name, selectedFoodItem.category)} 
+                        alt={selectedFoodItem.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = getHDHighlightFoodImage(selectedFoodItem.name, selectedFoodItem.category);
+                        }}
+                      />
+                    </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="font-black text-white text-sm truncate">{selectedFoodItem.name}</h3>
                       <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider capitalize truncate">

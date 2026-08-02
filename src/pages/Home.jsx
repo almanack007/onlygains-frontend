@@ -4,6 +4,7 @@ import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, Utensils } from 'lucide-r
 import { WaterTank } from '../components/WaterTank';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ManualAddFoodModal } from '../components/ManualAddFoodModal';
+import { getHDHighlightFoodImage } from '../services/foodApi';
 
 const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor }) => {
   const radius = 30;
@@ -461,15 +462,17 @@ export const Home = () => {
                       className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bg-[#2c2c2e] border border-white/5 hover:border-white/10"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
-                        <img
-                          src={food.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80'}
-                          alt={food.name || food.label}
-                          className="w-10 h-10 rounded-xl object-cover border border-white/10 flex-shrink-0 bg-neutral-900"
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?fit=crop&w=200&h=200&q=80';
-                          }}
-                        />
+                        <div className="w-11 h-11 rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 flex-shrink-0 shadow-md shadow-black/40">
+                          <img
+                            src={food.image || getHDHighlightFoodImage(food.name || food.label, food.category)}
+                            alt={food.name || food.label}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = getHDHighlightFoodImage(food.name || food.label, food.category);
+                            }}
+                          />
+                        </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="font-bold text-xs text-white truncate">{food.name || food.label}</p>
