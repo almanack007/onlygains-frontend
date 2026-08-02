@@ -109,7 +109,8 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm"
+            onTouchMove={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm touch-none"
           />
 
           {/* Full Screen / Bottom Sheet Modal */}
@@ -118,7 +119,7 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className="fixed bottom-0 left-0 right-0 max-w-[500px] mx-auto bg-[#161616] border-t border-white/10 rounded-t-[32px] p-6 z-50 overflow-y-auto max-h-[90vh] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] text-left"
+            className="fixed bottom-0 left-0 right-0 max-w-[500px] mx-auto bg-[#161616] border-t border-white/10 rounded-t-[32px] p-6 z-50 overflow-y-auto overscroll-contain max-h-[90vh] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] text-left"
           >
             {/* Handlebar */}
             <div className="w-12 h-1 bg-white/15 rounded-full mx-auto mb-4" />

@@ -138,14 +138,17 @@ export const Home = () => {
     }
   }, [isWaterModalOpen, waterIntake]);
 
-  // Lock body scroll when any modal is active
+  // Lock document & body scroll when any modal is active
   useEffect(() => {
     if (isWaterModalOpen || isManualFoodModalOpen || isExerciseOpen) {
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
     } else {
+      document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
     }
     return () => {
+      document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
     };
   }, [isWaterModalOpen, isManualFoodModalOpen, isExerciseOpen]);
@@ -546,14 +549,15 @@ export const Home = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsExerciseOpen(false)}
-              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+              onTouchMove={(e) => e.stopPropagation()}
+              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm touch-none"
             />
             <motion.div 
-              initial={{ scale: 0.92, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 20 }}
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90%] max-w-sm glass p-6 slide-up text-left shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90%] max-w-sm glass p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.7)] overscroll-contain max-h-[85vh] overflow-y-auto"
             >
               <h3 className="text-sm font-black uppercase tracking-wider text-white mb-5" data-i18n="log_exercise">{dict.log_exercise}</h3>
               <form onSubmit={handleSaveExercise} className="space-y-4">
@@ -607,16 +611,17 @@ export const Home = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsWaterModalOpen(false)}
-              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+              onTouchMove={(e) => e.stopPropagation()}
+              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm touch-none"
             />
             
             {/* Floating Window in the Middle */}
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, x: '-50%', y: '-40%' }}
-              animate={{ scale: 1, opacity: 1, x: '-50%', y: '-50%' }}
-              exit={{ scale: 0.9, opacity: 0, x: '-50%', y: '-40%' }}
+              initial={{ scale: 0.94, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.94, opacity: 0 }}
               transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-              className="fixed top-1/2 left-1/2 bg-[#161616] border border-white/10 rounded-[28px] p-6 z-50 overflow-y-auto w-[90%] max-w-[420px] max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.6)] text-left"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#161616] border border-white/10 rounded-[28px] p-5 sm:p-6 z-50 overflow-y-auto overscroll-contain w-[90%] max-w-[420px] max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-left"
             >
 
               {/* Header */}
