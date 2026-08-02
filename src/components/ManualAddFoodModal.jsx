@@ -174,15 +174,15 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
             )}
 
             {/* Categories */}
-            <div className="flex gap-2 overflow-x-auto thin-scroll pb-2 mb-4">
+            <div className="flex gap-2 overflow-x-auto thin-scroll scroll-fade-x pb-2 mb-4">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className={`flex-shrink-0 px-3.5 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                     activeCategory === cat 
-                      ? 'border-[#9EFF3A] bg-[#9EFF3A]/10 text-[#9EFF3A]' 
-                      : 'border-white/5 bg-white/[0.02] text-neutral-500 hover:border-white/10 hover:text-white'
+                      ? 'border-[#adff2f] bg-[#adff2f]/10 text-[#adff2f]' 
+                      : 'border-white/5 bg-white/[0.02] text-neutral-400 hover:border-white/10 hover:text-white'
                   }`}
                 >
                   {cat}
@@ -191,7 +191,7 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
             </div>
 
             {/* List */}
-            <div className="space-y-2 max-h-[350px] overflow-y-auto thin-scroll pr-1">
+            <div className="space-y-2 max-h-[350px] overflow-y-auto thin-scroll scroll-fade-y pr-1">
               {getFilteredFoods().length === 0 ? (
                 <p className="text-xs text-neutral-500 text-center py-8">No foods match your search criteria.</p>
               ) : (
@@ -199,15 +199,15 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
                   <button
                     key={name}
                     onClick={() => setSelectedFoodName(name)}
-                    className="w-full flex items-center justify-between p-3 bg-white/[0.01] border border-white/5 hover:border-white/10 rounded-2xl transition duration-200 text-left cursor-pointer"
+                    className="w-full flex items-center justify-between p-3 bg-white/[0.01] border border-white/5 hover:border-white/10 rounded-2xl transition duration-200 text-left cursor-pointer active:scale-[0.98]"
                   >
-                    <div>
-                      <p className="font-extrabold text-xs text-white">{name}</p>
-                      <p className="text-[10px] text-neutral-550 mt-1 capitalize font-medium">
+                    <div className="min-w-0 pr-2">
+                      <p className="font-extrabold text-xs text-white truncate">{name}</p>
+                      <p className="text-[10px] text-neutral-400 mt-0.5 capitalize font-medium truncate">
                         {data.category} • {data.cal} kcal / {data.per}{data.unit}
                       </p>
                     </div>
-                    <div className="text-[#9EFF3A] hover:scale-115 transition">
+                    <div className="text-[#adff2f] hover:scale-110 transition flex-shrink-0">
                       <PlusCircle className="w-5 h-5" />
                     </div>
                   </button>
