@@ -439,7 +439,12 @@ export const Home = () => {
           {/* Scroll fade dissolve container */}
           <div className="space-y-3.5 max-h-[420px] overflow-y-auto thin-scroll pr-1">
             {totals.foods.length === 0 ? (
-              <div className="relative bg-[#141416] bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.15),_transparent_45%),_radial-gradient(circle_at_bottom_left,_rgba(173,255,47,0.12),_transparent_45%)] border border-white/5 shadow-2xl rounded-[24px] p-6 flex items-center justify-between gap-4 overflow-hidden min-h-[145px] slide-up">
+              <div 
+                className="relative border border-white/5 shadow-2xl rounded-[24px] p-6 flex items-center justify-between gap-4 overflow-hidden min-h-[145px] slide-up"
+                style={{
+                  background: 'radial-gradient(circle at top right, rgba(168, 85, 247, 0.26) 0%, rgba(20, 20, 22, 0) 65%), radial-gradient(circle at bottom left, rgba(173, 255, 47, 0.20) 0%, rgba(20, 20, 22, 0) 65%), #141416'
+                }}
+              >
                 {/* Left Side Content */}
                 <div className="flex-1 space-y-4 text-left z-10">
                   <h3 className="text-sm font-extrabold text-white leading-snug">
@@ -513,34 +518,30 @@ export const Home = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="relative flex items-center justify-between p-0 overflow-hidden rounded-[24px] border border-white/5 bg-[#141416] bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.12),_transparent_40%),_radial-gradient(circle_at_bottom_left,_rgba(173,255,47,0.08),_transparent_40%)] hover:border-white/10 transition-all duration-200 min-h-[90px] shadow-lg"
+                      className="relative flex items-center justify-between p-0 overflow-hidden rounded-[24px] border border-white/5 hover:border-white/10 transition-all duration-200 h-[96px] shadow-lg"
+                      style={{
+                        background: 'radial-gradient(circle at top right, rgba(168, 85, 247, 0.26) 0%, rgba(20, 20, 22, 0) 65%), radial-gradient(circle at bottom left, rgba(173, 255, 47, 0.20) 0%, rgba(20, 20, 22, 0) 65%), #141416'
+                      }}
                     >
-                      <div className="flex items-center gap-3 min-w-0 flex-1 pl-4 py-3 pr-2">
-                        {/* Checkbox Indicator */}
-                        <div className="w-5 h-5 rounded-md bg-white flex items-center justify-center flex-shrink-0 shadow-md">
-                          <Check className="w-3.5 h-3.5 text-slate-950 stroke-[3.5]" />
-                        </div>
-                        
+                      <div className="flex flex-col justify-center min-w-0 flex-1 pl-5 py-3 pr-2 h-full">
                         {/* Title and Stats */}
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[10px] font-bold text-neutral-400">
-                            {food.servingAmount}{food.unit || 'g'} • {food.cal} kcal • P: {Math.round(food.protein)}g
+                        <p className="text-[10px] font-bold text-neutral-400">
+                          {food.servingAmount}{food.unit || 'g'} • {food.cal} kcal • P: {Math.round(food.protein)}g
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <p className="font-extrabold text-xs text-white leading-tight truncate">
+                            {food.name || food.label}
                           </p>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <p className="font-extrabold text-xs text-white leading-tight truncate">
-                              {food.name || food.label}
-                            </p>
-                            {food.brand && (
-                              <span className="text-[8px] font-extrabold text-[#adff2f] bg-[#adff2f]/10 px-1.5 py-0.5 rounded border border-[#adff2f]/20 flex-shrink-0 align-middle">
-                                {food.brand}
-                              </span>
-                            )}
-                          </div>
+                          {food.brand && (
+                            <span className="text-[8px] font-extrabold text-[#adff2f] bg-[#adff2f]/10 px-1.5 py-0.5 rounded border border-[#adff2f]/20 flex-shrink-0 align-middle">
+                              {food.brand}
+                            </span>
+                          )}
                         </div>
                       </div>
 
                       {/* Image on Right spanning full height */}
-                      <div className="relative self-stretch w-20 sm:w-24 overflow-hidden rounded-r-[24px] border-l border-white/5 flex-shrink-0">
+                      <div className="relative h-full w-24 overflow-hidden rounded-r-[24px] border-l border-white/5 flex-shrink-0">
                         <img
                           src={food.image || getHDHighlightFoodImage(food.name || food.label, food.category)}
                           alt={food.name || food.label}
