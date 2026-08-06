@@ -563,7 +563,7 @@ export const Home = () => {
                 {/* Left Side Content */}
                 <div className="flex-1 space-y-4 text-left z-10">
                   <h3 className="text-sm font-extrabold text-white leading-snug">
-                    It's time to log your meals & customize recipes
+                    It's time to log your meals
                   </h3>
                   
                   {/* Date Badge */}
