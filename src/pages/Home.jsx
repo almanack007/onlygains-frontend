@@ -563,196 +563,201 @@ export const Home = () => {
       </div>
 
       {/* ── Log Exercise Modal ────────────────────────────── */}
-      <AnimatePresence>
-        {isExerciseOpen && createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
-            {/* Backdrop */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsExerciseOpen(false)}
-              onTouchMove={(e) => e.stopPropagation()}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm touch-none pointer-events-auto"
-            />
-            <motion.div 
-              initial={{ scale: 0.92, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.92, opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-sm bg-[#161616] border border-white/10 rounded-[28px] p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.7)] overscroll-contain max-h-[85vh] overflow-y-auto pointer-events-auto"
-            >
-              <h3 className="text-sm font-black uppercase tracking-wider text-white mb-5" data-i18n="log_exercise">{dict.log_exercise}</h3>
-              <form onSubmit={handleSaveExercise} className="space-y-4">
-                <div>
-                  <span className="section-label block mb-1.5" data-i18n="exercise_name">{dict.exercise_name}</span>
-                  <input type="text" required placeholder="e.g. Squats, Bench Press"
-                    value={exerciseName} onChange={e => setExerciseName(e.target.value)}
-                    className="w-full px-3.5 py-3 text-xs bg-[#2c2c2e] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-[#adff2f]/50"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
+      {/* ── Log Exercise Modal ────────────────────────────── */}
+      {createPortal(
+        <AnimatePresence>
+          {isExerciseOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
+              {/* Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsExerciseOpen(false)}
+                onTouchMove={(e) => e.stopPropagation()}
+                className="fixed inset-0 bg-black/70 backdrop-blur-sm touch-none pointer-events-auto"
+              />
+              <motion.div 
+                initial={{ scale: 0.92, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.92, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="relative w-full max-w-sm bg-[#161616] border border-white/10 rounded-[28px] p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.7)] overscroll-contain max-h-[85vh] overflow-y-auto pointer-events-auto"
+              >
+                <h3 className="text-sm font-black uppercase tracking-wider text-white mb-5" data-i18n="log_exercise">{dict.log_exercise}</h3>
+                <form onSubmit={handleSaveExercise} className="space-y-4">
                   <div>
-                    <span className="section-label block mb-1.5" data-i18n="duration_mins">{dict.duration_mins}</span>
-                    <input type="number" required placeholder="30"
-                      value={exerciseDuration} onChange={e => setExerciseDuration(e.target.value)}
+                    <span className="section-label block mb-1.5" data-i18n="exercise_name">{dict.exercise_name}</span>
+                    <input type="text" required placeholder="e.g. Squats, Bench Press"
+                      value={exerciseName} onChange={e => setExerciseName(e.target.value)}
                       className="w-full px-3.5 py-3 text-xs bg-[#2c2c2e] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-[#adff2f]/50"
                     />
                   </div>
-                  <div>
-                    <span className="section-label block mb-1.5" data-i18n="calories_burned">{dict.calories_burned}</span>
-                    <input type="number" required placeholder="250"
-                      value={exerciseCalories} onChange={e => setExerciseCalories(e.target.value)}
-                      className="w-full px-3.5 py-3 text-xs bg-[#2c2c2e] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-[#adff2f]/50"
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setIsExerciseOpen(false)}
-                    className="flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition bg-[#2c2c2e] text-neutral-300 border border-white/5 hover:bg-[#3a3a3c] active:scale-95 cursor-pointer">
-                    Cancel
-                  </button>
-                  <button type="submit"
-                    className="flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition bg-[#adff2f] text-black hover:bg-[#9eff1a] active:scale-95 cursor-pointer shadow-[0_0_12px_rgba(173,255,47,0.25)]"
-                    data-i18n="record_workout">
-                    {dict.record_workout}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>,
-          document.body
-        )}
-      </AnimatePresence>
-
-      {/* ── Log Water Modal (Redesigned Screen) ───────────────────────────────── */}
-      <AnimatePresence>
-        {isWaterModalOpen && createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsWaterModalOpen(false)}
-              onTouchMove={(e) => e.stopPropagation()}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm touch-none pointer-events-auto"
-            />
-            
-            {/* Floating Window in the Middle */}
-            <motion.div
-              initial={{ scale: 0.94, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.94, opacity: 0 }}
-              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-              className="relative bg-[#161616] border border-white/10 rounded-[28px] p-5 sm:p-6 z-50 overflow-y-auto overscroll-contain w-full max-w-[420px] max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-left pointer-events-auto"
-            >
-
-              {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-base font-black uppercase tracking-wider text-white">Water Intake</h2>
-                  <p className="text-xs font-bold text-neutral-400 mt-0.5">
-                    {waterIntake} / {targetWater} ml
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsWaterModalOpen(false)}
-                  className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-black uppercase tracking-wider text-white hover:bg-white/10 active:scale-95 transition cursor-pointer"
-                >
-                  Done
-                </button>
-              </div>
-
-              <div className="space-y-5">
-                {/* Daily Goal Editor */}
-                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">
-                    Daily Goal
-                  </span>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateGoal(-250)}
-                        className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white text-base font-black hover:bg-white/10 active:scale-95 transition cursor-pointer"
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        min="250"
-                        max="10000"
-                        value={goalInput}
-                        onChange={(e) => handleSetGoal(parseInt(e.target.value) || 0)}
-                        className="w-20 bg-neutral-900 border border-white/5 rounded-xl py-2 text-center text-sm font-black text-white focus:outline-none focus:border-[#adff2f]/50"
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="section-label block mb-1.5" data-i18n="duration_mins">{dict.duration_mins}</span>
+                      <input type="number" required placeholder="30"
+                        value={exerciseDuration} onChange={e => setExerciseDuration(e.target.value)}
+                        className="w-full px-3.5 py-3 text-xs bg-[#2c2c2e] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-[#adff2f]/50"
                       />
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateGoal(250)}
-                        className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white text-base font-black hover:bg-white/10 active:scale-95 transition cursor-pointer"
-                      >
-                        +
-                      </button>
                     </div>
-                    <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">ml</span>
+                    <div>
+                      <span className="section-label block mb-1.5" data-i18n="calories_burned">{dict.calories_burned}</span>
+                      <input type="number" required placeholder="250"
+                        value={exerciseCalories} onChange={e => setExerciseCalories(e.target.value)}
+                        className="w-full px-3.5 py-3 text-xs bg-[#2c2c2e] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-[#adff2f]/50"
+                      />
+                    </div>
                   </div>
-                </div>
-
-                {/* Quick Add Grid */}
-                <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2.5">
-                    Quick Add
-                  </span>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {[250, 500, 750, 1000].map(ml => (
-                      <button
-                        key={ml}
-                        onClick={() => handleAddWater(ml)}
-                        className="py-3 rounded-2xl bg-neutral-800 border border-white/5 hover:bg-neutral-750 text-white font-bold text-sm active:scale-95 transition cursor-pointer"
-                      >
-                        +{ml} ml
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Update Exact Amount Form */}
-                <form onSubmit={handleUpdateExactWater} className="bg-white/[0.02] border border-white/5 rounded-2xl p-3.5 sm:p-4 w-full box-border">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">
-                    Update Exact Amount (ml)
-                  </span>
-                  <div className="flex items-center gap-2 w-full">
-                    <input
-                      type="number"
-                      placeholder="e.g. 1250"
-                      value={exactWaterInput}
-                      onChange={e => setExactWaterInput(e.target.value)}
-                      className="min-w-0 flex-1 bg-neutral-900 border border-white/5 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-[#adff2f]/50"
-                    />
-                    <button
-                      type="submit"
-                      className="flex-shrink-0 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black uppercase tracking-wider text-xs active:scale-95 transition cursor-pointer whitespace-nowrap"
-                    >
-                      Update
+                  <div className="flex gap-3 pt-2">
+                    <button type="button" onClick={() => setIsExerciseOpen(false)}
+                      className="flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition bg-[#2c2c2e] text-neutral-300 border border-white/5 hover:bg-[#3a3a3c] active:scale-95 cursor-pointer">
+                      Cancel
                     </button>
-                  </div>
-                  <div className="flex justify-between items-center mt-3 px-1">
-                    <button
-                      type="button"
-                      onClick={handleResetWater}
-                      className="text-[9px] font-black uppercase tracking-widest text-rose-400 hover:text-rose-350 transition cursor-pointer"
-                    >
-                      Reset Today
+                    <button type="submit"
+                      className="flex-1 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition bg-[#adff2f] text-black hover:bg-[#9eff1a] active:scale-95 cursor-pointer shadow-[0_0_12px_rgba(173,255,47,0.25)]"
+                      data-i18n="record_workout">
+                      {dict.record_workout}
                     </button>
                   </div>
                 </form>
-              </div>
-            </motion.div>
-          </div>,
-          document.body
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* ── Log Water Modal (Redesigned Screen) ───────────────────────────────── */}
+      {createPortal(
+        <AnimatePresence>
+          {isWaterModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsWaterModalOpen(false)}
+                onTouchMove={(e) => e.stopPropagation()}
+                className="fixed inset-0 bg-black/70 backdrop-blur-sm touch-none pointer-events-auto"
+              />
+              
+              {/* Floating Window in the Middle */}
+              <motion.div
+                initial={{ scale: 0.94, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.94, opacity: 0 }}
+                transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+                className="relative bg-[#161616] border border-white/10 rounded-[28px] p-5 sm:p-6 z-50 overflow-y-auto overscroll-contain w-full max-w-[420px] max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-left pointer-events-auto"
+              >
+
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-base font-black uppercase tracking-wider text-white">Water Intake</h2>
+                    <p className="text-xs font-bold text-neutral-400 mt-0.5">
+                      {waterIntake} / {targetWater} ml
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsWaterModalOpen(false)}
+                    className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-black uppercase tracking-wider text-white hover:bg-white/10 active:scale-95 transition cursor-pointer"
+                  >
+                    Done
+                  </button>
+                </div>
+
+                <div className="space-y-5">
+                  {/* Daily Goal Editor */}
+                  <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">
+                      Daily Goal
+                    </span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateGoal(-250)}
+                          className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white text-base font-black hover:bg-white/10 active:scale-95 transition cursor-pointer"
+                        >
+                          -
+                        </button>
+                        <input
+                          type="number"
+                          min="250"
+                          max="10000"
+                          value={goalInput}
+                          onChange={(e) => handleSetGoal(parseInt(e.target.value) || 0)}
+                          className="w-20 bg-neutral-900 border border-white/5 rounded-xl py-2 text-center text-sm font-black text-white focus:outline-none focus:border-[#adff2f]/50"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateGoal(250)}
+                          className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white text-base font-black hover:bg-white/10 active:scale-95 transition cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">ml</span>
+                    </div>
+                  </div>
+
+                  {/* Quick Add Grid */}
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2.5">
+                      Quick Add
+                    </span>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {[250, 500, 750, 1000].map(ml => (
+                        <button
+                          key={ml}
+                          onClick={() => handleAddWater(ml)}
+                          className="py-3 rounded-2xl bg-neutral-800 border border-white/5 hover:bg-neutral-750 text-white font-bold text-sm active:scale-95 transition cursor-pointer"
+                        >
+                          +{ml} ml
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Update Exact Amount Form */}
+                  <form onSubmit={handleUpdateExactWater} className="bg-white/[0.02] border border-white/5 rounded-2xl p-3.5 sm:p-4 w-full box-border">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">
+                      Update Exact Amount (ml)
+                    </span>
+                    <div className="flex items-center gap-2 w-full">
+                      <input
+                        type="number"
+                        placeholder="e.g. 1250"
+                        value={exactWaterInput}
+                        onChange={e => setExactWaterInput(e.target.value)}
+                        className="min-w-0 flex-1 bg-neutral-900 border border-white/5 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-[#adff2f]/50"
+                      />
+                      <button
+                        type="submit"
+                        className="flex-shrink-0 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black uppercase tracking-wider text-xs active:scale-95 transition cursor-pointer whitespace-nowrap"
+                      >
+                        Update
+                      </button>
+                    </div>
+                    <div className="flex justify-between items-center mt-3 px-1">
+                      <button
+                        type="button"
+                        onClick={handleResetWater}
+                        className="text-[9px] font-black uppercase tracking-widest text-rose-400 hover:text-rose-350 transition cursor-pointer"
+                      >
+                        Reset Today
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <ManualAddFoodModal 
         isOpen={isManualFoodModalOpen} 

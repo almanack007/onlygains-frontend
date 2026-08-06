@@ -112,9 +112,9 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
     };
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      {isOpen && createPortal(
+      {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
           {/* Backdrop */}
           <motion.div 
@@ -314,9 +314,9 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
               </div>
             )}
           </motion.div>
-        </div>,
-        document.body
+        </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
