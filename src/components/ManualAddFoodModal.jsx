@@ -185,7 +185,7 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
             </div>
 
             {/* Food Results List */}
-            <div className="space-y-2 max-h-[340px] overflow-y-auto thin-scroll scroll-fade-y pr-1">
+            <div className="space-y-2 max-h-[340px] overflow-y-auto thin-scroll pr-1">
               {isLoading && foodItems.length === 0 ? (
                 <div className="text-center py-10">
                   <Loader className="w-6 h-6 text-[#adff2f] animate-spin mx-auto mb-2" />

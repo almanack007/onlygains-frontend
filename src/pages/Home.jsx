@@ -661,7 +661,7 @@ export const Home = () => {
           </div>
 
           {/* Scroll fade dissolve container */}
-          <div className="space-y-2.5 max-h-[250px] overflow-y-auto thin-scroll scroll-fade-y pr-1">
+          <div className="space-y-2.5 max-h-[250px] overflow-y-auto thin-scroll pr-1">
             {totals.exercises.length === 0 ? (
               <div className="text-center py-8 px-4">
                 <div className="w-12 h-12 mx-auto rounded-2xl flex items-center justify-center mb-3 bg-[#2c2c2e] border border-white/5">
