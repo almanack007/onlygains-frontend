@@ -6,7 +6,7 @@ export const Profile = () => {
   const { 
     currentUser, loginUser, userProfile, setUserProfile, goalConfigs,
     indianLanguages, lang, setLang, translations, applyTheme, showToast,
-    apiBase
+    apiBase, signOut
   } = useApp();
 
   const dict = translations[lang] || translations.en;
@@ -416,15 +416,21 @@ export const Profile = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 pt-4 border-t border-slate-850 text-xs">
+          <div className="flex flex-col gap-3 pt-4 border-t border-slate-850 text-xs">
             <a 
               href="https://github.com/almanack007/Fitnesstrack" 
               target="_blank" 
               rel="noreferrer"
-              className="text-slate-400 hover:text-emerald-500 transition font-bold"
+              className="text-slate-400 hover:text-emerald-500 transition font-bold text-center md:text-left block"
             >
               FitTrack Pro Documentation
             </a>
+            <button
+              onClick={signOut}
+              className="w-full rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 font-black py-3.5 text-xs transition uppercase tracking-wider cursor-pointer active:scale-95 text-center block"
+            >
+              Log Out of Account
+            </button>
           </div>
         </div>
 
