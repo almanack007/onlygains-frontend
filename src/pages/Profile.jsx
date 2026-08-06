@@ -347,94 +347,66 @@ export const Profile = () => {
       </div>
 
       {/* App Customization & Settings */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* Customizations */}
-        <div className="glass p-6 space-y-5">
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-200 flex items-center gap-2" data-i18n="app_customization">
-            <Palette className="w-4 h-4 text-emerald-500" /> {dict.app_customization}
-          </h3>
+      <div className="glass p-6 space-y-5">
+        <h3 className="text-xs font-black uppercase tracking-wider text-slate-200 flex items-center gap-2" data-i18n="app_customization">
+          <Palette className="w-4 h-4 text-emerald-500" /> {dict.app_customization}
+        </h3>
 
-          <div>
-            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block mb-2.5" data-i18n="theme_pref">{dict.theme_pref}</span>
-            <div className="flex bg-slate-900/60 p-1 rounded-2xl border border-slate-850 gap-1">
-              {['light', 'dark', 'system'].map((t) => {
-                const isActive = activeTheme === t;
-                return (
-                  <button
-                    key={t}
-                    onClick={() => handleThemeChange(t)}
-                    className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-xl transition capitalize ${
-                      isActive ? 'bg-slate-800 text-emerald-500 border border-slate-750 font-black' : 'text-slate-550 hover:text-slate-300'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="space-y-4 pt-4 border-t border-slate-850">
-            <div className="flex justify-between items-center">
-              <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block" data-i18n="notifications">Alert Notifications</span>
-              <button 
-                onClick={() => setIsNotificationsOpen(true)}
-                className="text-[9px] font-black uppercase tracking-wider text-emerald-500 hover:text-emerald-450 transition"
-              >
-                View Log
-              </button>
-            </div>
-            
-            <div className="flex items-center justify-between cursor-pointer" onClick={handleReminderToggle}>
-              <span className="text-xs text-slate-350" data-i18n="daily_reminders">{dict.daily_reminders}</span>
-              <button className="text-slate-400 hover:text-white transition">
-                {reminders ? <ToggleRight className="w-8 h-8 text-emerald-500" /> : <ToggleLeft className="w-8 h-8 text-slate-600" />}
-              </button>
-            </div>
-            
-            <div className="flex items-center justify-between cursor-pointer" onClick={handleWaterAlertToggle}>
-              <span className="text-xs text-slate-350" data-i18n="water_alerts">{dict.water_alerts}</span>
-              <button className="text-slate-400 hover:text-white transition">
-                {waterAlerts ? <ToggleRight className="w-8 h-8 text-emerald-500" /> : <ToggleLeft className="w-8 h-8 text-slate-600" />}
-              </button>
-            </div>
+        <div>
+          <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block mb-2.5" data-i18n="theme_pref">{dict.theme_pref}</span>
+          <div className="flex bg-slate-900/60 p-1 rounded-2xl border border-slate-850 gap-1">
+            {['light', 'dark', 'system'].map((t) => {
+              const isActive = activeTheme === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => handleThemeChange(t)}
+                  className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-xl transition capitalize ${
+                    isActive ? 'bg-slate-800 text-emerald-500 border border-slate-750 font-black' : 'text-slate-550 hover:text-slate-300'
+                  }`}
+                >
+                  {t}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Support, Documentation, API configs */}
-        <div className="glass p-6 space-y-5">
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-200 flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" /> Support & Advanced Settings
-          </h3>
-          
-          <div className="space-y-2.5 text-xs">
-            <span className="text-[10px] text-slate-550 uppercase font-bold tracking-wider block">Backend API Status</span>
-            <div className="bg-slate-950/60 p-3 rounded-2xl border border-slate-850 font-mono text-[10px] text-emerald-500 flex items-center justify-between shadow-inner">
-              <span>https://onlygains-backend.onrender.com/api</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#ccff00]"></span>
-            </div>
+        <div className="space-y-4 pt-4 border-t border-slate-850">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block" data-i18n="notifications">Alert Notifications</span>
+            <button 
+              onClick={() => setIsNotificationsOpen(true)}
+              className="text-[9px] font-black uppercase tracking-wider text-emerald-500 hover:text-emerald-450 transition"
+            >
+              View Log
+            </button>
           </div>
-
-          <div className="flex flex-col gap-3 pt-4 border-t border-slate-850 text-xs">
-            <a 
-              href="https://github.com/almanack007/Fitnesstrack" 
-              target="_blank" 
-              rel="noreferrer"
-              className="text-slate-400 hover:text-emerald-500 transition font-bold text-center md:text-left block"
-            >
-              FitTrack Pro Documentation
-            </a>
-            <button
-              onClick={signOut}
-              className="w-full rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 font-black py-3.5 text-xs transition uppercase tracking-wider cursor-pointer active:scale-95 text-center block"
-            >
-              Log Out of Account
+          
+          <div className="flex items-center justify-between cursor-pointer" onClick={handleReminderToggle}>
+            <span className="text-xs text-slate-350" data-i18n="daily_reminders">{dict.daily_reminders}</span>
+            <button className="text-slate-400 hover:text-white transition">
+              {reminders ? <ToggleRight className="w-8 h-8 text-emerald-500" /> : <ToggleLeft className="w-8 h-8 text-slate-600" />}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between cursor-pointer" onClick={handleWaterAlertToggle}>
+            <span className="text-xs text-slate-350" data-i18n="water_alerts">{dict.water_alerts}</span>
+            <button className="text-slate-400 hover:text-white transition">
+              {waterAlerts ? <ToggleRight className="w-8 h-8 text-emerald-500" /> : <ToggleLeft className="w-8 h-8 text-slate-600" />}
             </button>
           </div>
         </div>
 
-      </div>
+        <div className="pt-4 border-t border-slate-850">
+          <button
+            onClick={signOut}
+            className="w-full rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 font-black py-3.5 text-xs transition uppercase tracking-wider cursor-pointer active:scale-95 text-center block"
+          >
+            Log Out of Account
+          </button>
+        </div>
+      </div>>
 
       {/* Premium Subscription Checkout Dialog Modal */}
       {isBillingOpen && (
