@@ -376,10 +376,10 @@ export const AppProvider = ({ children }) => {
   };
 
   // Sync state to local storage
-  const saveLocalState = (profile = userProfile, log = todayLog, water = waterIntake, weekly = weeklyData, weeklyCals = weeklyCalsData, weeklyWaters = weeklyWatersData, weeklyWeights = weeklyWeightsData) => {
+  const saveLocalState = (profile = userProfile, log = todayLog, water = waterIntake, weekly = weeklyData, weeklyCals = weeklyCalsData, weeklyWaters = weeklyWatersData, weeklyWeights = weeklyWeightsData, dateKey = viewDateKey) => {
     localStorage.setItem('fittrack_profile', JSON.stringify(profile));
-    localStorage.setItem('fittrack_log_date', viewDateKey);
-    localStorage.setItem('fittrack_water_date', viewDateKey);
+    localStorage.setItem('fittrack_log_date', dateKey);
+    localStorage.setItem('fittrack_water_date', dateKey);
     localStorage.setItem('fittrack_log', JSON.stringify(log));
     localStorage.setItem('fittrack_water', water);
     localStorage.setItem('fittrack_weekly', JSON.stringify(weekly));
@@ -407,30 +407,46 @@ export const AppProvider = ({ children }) => {
         }
       }
 
+      const savedLogDate = localStorage.getItem('fittrack_log_date');
+      const isSameDate = savedLogDate === dateKey;
+
       let updatedLog = todayLog;
       let localNeedsUpload = false;
       if (data.log !== null && Array.isArray(data.log)) {
-        if (data.log.length > 0 || todayLog.length === 0) {
+        if (data.log.length > 0 || !isSameDate) {
           updatedLog = data.log;
           setTodayLog(data.log);
         } else {
-          localNeedsUpload = true;
+          localNeedsUpload = todayLog.length > 0;
         }
       } else {
-        localNeedsUpload = todayLog.length > 0;
+        if (isSameDate && todayLog.length > 0) {
+          localNeedsUpload = true;
+        } else {
+          updatedLog = [];
+          setTodayLog([]);
+        }
       }
+
+      const savedWaterDate = localStorage.getItem('fittrack_water_date');
+      const isSameWaterDate = savedWaterDate === dateKey;
 
       let updatedWater = waterIntake;
       if (data.waterIntake !== null && Number.isInteger(data.waterIntake)) {
         const incomingWater = (data.waterIntake <= 20 && data.waterIntake > 0) ? data.waterIntake * 250 : data.waterIntake;
-        if (incomingWater > 0 || waterIntake === 0) {
+        if (incomingWater > 0 || !isSameWaterDate) {
           updatedWater = incomingWater;
           setWaterIntake(incomingWater);
         } else {
-          localNeedsUpload = true;
+          localNeedsUpload = waterIntake > 0;
         }
       } else {
-        if (waterIntake > 0) localNeedsUpload = true;
+        if (isSameWaterDate && waterIntake > 0) {
+          localNeedsUpload = true;
+        } else {
+          updatedWater = 0;
+          setWaterIntake(0);
+        }
       }
 
       let updatedWeekly = weeklyData;
@@ -453,7 +469,7 @@ export const AppProvider = ({ children }) => {
         setWeeklyWeightsData(updatedWeeklyWeights);
       }
 
-      saveLocalState(updatedProfile, updatedLog, updatedWater, updatedWeekly, updatedWeeklyCals, updatedWeeklyWaters, updatedWeeklyWeights);
+      saveLocalState(updatedProfile, updatedLog, updatedWater, updatedWeekly, updatedWeeklyCals, updatedWeeklyWaters, updatedWeeklyWeights, dateKey);
 
       if (localNeedsUpload) {
         saveDailyToDatabase(userId, dateKey, updatedProfile, updatedLog, updatedWater, updatedWeekly);
