@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp } from '../context/AppContext';
-import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, Utensils } from 'lucide-react';
+import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, Utensils, Calendar, Check } from 'lucide-react';
 import { WaterTank } from '../components/WaterTank';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ManualAddFoodModal } from '../components/ManualAddFoodModal';
@@ -415,16 +415,12 @@ export const Home = () => {
               </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* ── RIGHT: Meals + Exercises ─────────────────────── */}
-      <div className="lg:col-span-5 space-y-5 w-full max-w-full">
-
-        {/* Today's Meals */}
+        </div>        {/* Today's Meals */}
         <div className="glass p-5 w-full">
           <div className="flex items-center justify-between gap-2 mb-4">
-            <h2 className="text-sm font-black uppercase tracking-wider text-white" data-i18n="todays_meals">{dict.todays_meals}</h2>
+            <h2 className="text-base font-extrabold text-white">
+              {lang === 'en' ? 'Daily Meal' : dict.todays_meals}
+            </h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsManualFoodModalOpen(true)}
@@ -441,13 +437,70 @@ export const Home = () => {
           </div>
 
           {/* Scroll fade dissolve container */}
-          <div className="space-y-2.5 max-h-[300px] overflow-y-auto thin-scroll scroll-fade-y pr-1">
+          <div className="space-y-3.5 max-h-[420px] overflow-y-auto thin-scroll pr-1">
             {totals.foods.length === 0 ? (
-              <div className="text-center py-10 px-4">
-                <div className="w-12 h-12 mx-auto rounded-2xl flex items-center justify-center mb-3 bg-[#2c2c2e] border border-white/5">
-                  <Utensils className="w-5 h-5 text-neutral-400" />
+              <div className="relative bg-[#141416] bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.15),_transparent_45%),_radial-gradient(circle_at_bottom_left,_rgba(173,255,47,0.12),_transparent_45%)] border border-white/5 shadow-2xl rounded-[24px] p-6 flex items-center justify-between gap-4 overflow-hidden min-h-[145px] slide-up">
+                {/* Left Side Content */}
+                <div className="flex-1 space-y-4 text-left z-10">
+                  <h3 className="text-sm font-extrabold text-white leading-snug">
+                    It's time to log your meals & customize recipes
+                  </h3>
+                  
+                  {/* Date Badge */}
+                  <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-neutral-400 bg-white/[0.03] border border-white/5 px-3 py-1.5 rounded-full w-fit">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>{selectedDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
                 </div>
-                <p className="section-label">No meals logged today</p>
+
+                {/* Right Side Illustration */}
+                <div className="flex-shrink-0 z-10 relative">
+                  <svg viewBox="0 0 120 120" className="w-24 h-24 sm:w-28 sm:h-28 select-none drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] animate-pulse overflow-visible">
+                    <defs>
+                      <linearGradient id="broccoliStem" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#f5efe6" />
+                        <stop offset="100%" stopColor="#e1d4c0" />
+                      </linearGradient>
+                      <radialGradient id="broccoliHead" cx="50%" cy="55%" r="50%">
+                        <stop offset="0%" stopColor="#76b041" />
+                        <stop offset="60%" stopColor="#437c17" />
+                        <stop offset="100%" stopColor="#254d08" />
+                      </radialGradient>
+                      <radialGradient id="broccoliHeadLight" cx="40%" cy="40%" r="45%">
+                        <stop offset="0%" stopColor="#9ad15c" />
+                        <stop offset="100%" stopColor="#5b9c24" />
+                      </radialGradient>
+                      <radialGradient id="appleBody" cx="35%" cy="35%" r="65%">
+                        <stop offset="0%" stopColor="#ff4b4b" />
+                        <stop offset="60%" stopColor="#d61c1c" />
+                        <stop offset="100%" stopColor="#7a0303" />
+                      </radialGradient>
+                      <linearGradient id="appleLeaf" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#a3e635" />
+                        <stop offset="100%" stopColor="#4d7c0f" />
+                      </linearGradient>
+                    </defs>
+                    <g transform="translate(10, 15) rotate(-10) scale(0.9)">
+                      <path d="M40,75 C40,95 44,105 50,105 C56,105 60,95 60,75 C60,65 40,65 40,75 Z" fill="url(#broccoliStem)" />
+                      <path d="M35,65 C33,72 26,78 20,76 C14,74 15,64 22,60 C29,56 35,65 35,65 Z" fill="url(#broccoliStem)" />
+                      <circle cx="28" cy="55" r="18" fill="url(#broccoliHead)" />
+                      <circle cx="50" cy="45" r="22" fill="url(#broccoliHeadLight)" />
+                      <circle cx="72" cy="55" r="18" fill="url(#broccoliHead)" />
+                      <circle cx="40" cy="38" r="16" fill="url(#broccoliHeadLight)" />
+                      <circle cx="60" cy="38" r="16" fill="url(#broccoliHeadLight)" />
+                      <circle cx="34" cy="50" r="4" fill="#a3e635" opacity="0.3" />
+                      <circle cx="52" cy="40" r="5" fill="#a3e635" opacity="0.4" />
+                      <circle cx="68" cy="52" r="4" fill="#a3e635" opacity="0.3" />
+                    </g>
+                    <g transform="translate(55, 35) rotate(15)">
+                      <path d="M30,32 C30,22 36,15 42,16" fill="none" stroke="#78350f" strokeWidth="3" strokeLinecap="round" />
+                      <path d="M42,16 C48,16 54,10 52,4 C46,6 40,10 42,16 Z" fill="url(#appleLeaf)" />
+                      <path d="M30,30 C12,28 4,45 4,60 C4,85 24,96 30,94 C36,96 56,85 56,60 C56,45 48,28 30,30 Z" fill="url(#appleBody)" />
+                      <ellipse cx="18" cy="48" rx="5" ry="10" transform="rotate(-20 18 48)" fill="#ffffff" opacity="0.25" />
+                      <circle cx="24" cy="40" r="3" fill="#ffffff" opacity="0.2" />
+                    </g>
+                  </svg>
+                </div>
               </div>
             ) : (
               <AnimatePresence>
@@ -460,40 +513,52 @@ export const Home = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="flex items-center justify-between p-3 rounded-xl transition-all duration-200 bg-[#121212] border border-white/5 hover:border-white/10"
+                      className="relative flex items-center justify-between p-0 overflow-hidden rounded-[24px] border border-white/5 bg-[#141416] bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.12),_transparent_40%),_radial-gradient(circle_at_bottom_left,_rgba(173,255,47,0.08),_transparent_40%)] hover:border-white/10 transition-all duration-200 min-h-[90px] shadow-lg"
                     >
-                      <div className="flex items-center gap-3.5 min-w-0 flex-1 pr-2">
-                        <div className="w-16 h-16 rounded-none overflow-hidden border border-white/10 bg-neutral-950 flex-shrink-0 shadow-md">
-                          <img
-                            src={food.image || getHDHighlightFoodImage(food.name || food.label, food.category)}
-                            alt={food.name || food.label}
-                            className="w-full h-full object-cover rounded-none"
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = getHDHighlightFoodImage(food.name || food.label, food.category);
-                            }}
-                          />
+                      <div className="flex items-center gap-3 min-w-0 flex-1 pl-4 py-3 pr-2">
+                        {/* Checkbox Indicator */}
+                        <div className="w-5 h-5 rounded-md bg-white flex items-center justify-center flex-shrink-0 shadow-md">
+                          <Check className="w-3.5 h-3.5 text-slate-950 stroke-[3.5]" />
                         </div>
+                        
+                        {/* Title and Stats */}
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <p className="font-bold text-xs text-white truncate">{food.name || food.label}</p>
+                          <p className="text-[10px] font-bold text-neutral-400">
+                            {food.servingAmount}{food.unit || 'g'} • {food.cal} kcal • P: {Math.round(food.protein)}g
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <p className="font-extrabold text-xs text-white leading-tight truncate">
+                              {food.name || food.label}
+                            </p>
                             {food.brand && (
-                              <span className="text-[8px] font-extrabold text-[#adff2f] bg-[#adff2f]/10 px-1.5 py-0.5 rounded border border-[#adff2f]/20 flex-shrink-0">
+                              <span className="text-[8px] font-extrabold text-[#adff2f] bg-[#adff2f]/10 px-1.5 py-0.5 rounded border border-[#adff2f]/20 flex-shrink-0 align-middle">
                                 {food.brand}
                               </span>
                             )}
                           </div>
-                          <p className="text-[10px] mt-0.5 text-neutral-400 capitalize truncate">
-                            {food.servingAmount} {food.unit || 'g'} • {food.cal} kcal • P: {Math.round(food.protein)}g
-                          </p>
                         </div>
                       </div>
-                      <button onClick={() => handleDeleteItem(gi)}
-                        className="p-2 rounded-xl transition text-neutral-450 hover:text-rose-500 hover:bg-rose-500/10 flex-shrink-0 cursor-pointer"
-                        title="Delete item"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+
+                      {/* Image on Right spanning full height */}
+                      <div className="relative self-stretch w-20 sm:w-24 overflow-hidden rounded-r-[24px] border-l border-white/5 flex-shrink-0">
+                        <img
+                          src={food.image || getHDHighlightFoodImage(food.name || food.label, food.category)}
+                          alt={food.name || food.label}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = getHDHighlightFoodImage(food.name || food.label, food.category);
+                          }}
+                        />
+                        {/* Floating Action Controls */}
+                        <button 
+                          onClick={() => handleDeleteItem(gi)}
+                          className="absolute top-1 right-1 p-1.5 rounded-full bg-black/60 hover:bg-rose-600/90 text-white/90 backdrop-blur-sm transition cursor-pointer shadow active:scale-90"
+                          title="Delete item"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </motion.div>
                   );
                 })}
