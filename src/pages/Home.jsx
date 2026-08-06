@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp } from '../context/AppContext';
-import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, Utensils, Calendar, Check } from 'lucide-react';
+import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, Utensils, Calendar, Check, Flame } from 'lucide-react';
 import { WaterTank } from '../components/WaterTank';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ManualAddFoodModal } from '../components/ManualAddFoodModal';
@@ -74,6 +74,45 @@ const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor
   );
 };
 
+const EXERCISE_DATASET = [
+  { name: 'Running (Fast - 10 km/h)', met: 9.8, category: 'cardio' },
+  { name: 'Running (Moderate - 8 km/h)', met: 8.3, category: 'cardio' },
+  { name: 'Running (Slow / Jogging)', met: 6.0, category: 'cardio' },
+  { name: 'Cycling (Vigorous)', met: 8.0, category: 'cardio' },
+  { name: 'Cycling (Moderate)', met: 6.0, category: 'cardio' },
+  { name: 'Swimming (Freestyle)', met: 5.8, category: 'cardio' },
+  { name: 'Walking (Brisk)', met: 3.5, category: 'cardio' },
+  { name: 'Walking (Leisurely)', met: 2.5, category: 'cardio' },
+  { name: 'Jump Rope', met: 11.0, category: 'cardio' },
+  { name: 'Elliptical Trainer', met: 5.0, category: 'cardio' },
+  { name: 'HIIT Workout', met: 8.0, category: 'cardio' },
+  { name: 'Aerobics', met: 7.3, category: 'cardio' },
+  { name: 'Weight Lifting (Heavy)', met: 6.0, category: 'strength' },
+  { name: 'Weight Lifting (Light/Moderate)', met: 3.0, category: 'strength' },
+  { name: 'Calisthenics (Pushups/Pullups)', met: 4.5, category: 'strength' },
+  { name: 'CrossFit', met: 8.0, category: 'strength' },
+  { name: 'Kettlebell Training', met: 8.0, category: 'strength' },
+  { name: 'Circuit Training', met: 4.3, category: 'strength' },
+  { name: 'Yoga (Power / Vinyasa)', met: 4.0, category: 'flexibility' },
+  { name: 'Yoga (Hatha / Restorative)', met: 2.5, category: 'flexibility' },
+  { name: 'Pilates', met: 3.0, category: 'flexibility' },
+  { name: 'Stretching / Flexibility', met: 2.3, category: 'flexibility' },
+  { name: 'Squats', met: 5.0, category: 'strength' },
+  { name: 'Bench Press', met: 5.5, category: 'strength' },
+  { name: 'Deadlift', met: 6.0, category: 'strength' },
+  { name: 'Push-ups', met: 4.0, category: 'strength' },
+  { name: 'Pull-ups', met: 5.0, category: 'strength' },
+  { name: 'Lunges', met: 4.5, category: 'strength' },
+  { name: 'Burpees', met: 8.0, category: 'cardio' },
+  { name: 'Plank', met: 2.8, category: 'strength' },
+  { name: 'Crunches / Sit-ups', met: 3.8, category: 'strength' },
+  { name: 'Basketball Game', met: 8.0, category: 'sports' },
+  { name: 'Soccer / Football Game', met: 7.0, category: 'sports' },
+  { name: 'Tennis (Singles)', met: 7.3, category: 'sports' },
+  { name: 'Badminton', met: 5.5, category: 'sports' },
+  { name: 'Boxing (Sparring)', met: 7.8, category: 'cardio' }
+];
+
 export const Home = () => {
   const {
     userProfile, todayLog, setTodayLog, waterIntake, setWaterIntake,
@@ -119,6 +158,9 @@ export const Home = () => {
   const [exerciseName, setExerciseName]         = useState('');
   const [exerciseDuration, setExerciseDuration] = useState('');
   const [exerciseCalories, setExerciseCalories] = useState('');
+  const [exerciseSuggestions, setExerciseSuggestions] = useState([]);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [isWaterModalOpen, setIsWaterModalOpen] = useState(false);
   const [isManualFoodModalOpen, setIsManualFoodModalOpen] = useState(false);
   const [exactWaterInput, setExactWaterInput] = useState('');
@@ -233,6 +275,42 @@ export const Home = () => {
 
   const handleClearAll = () => { setTodayLog([]); showToast('Cleared all logged items', 'info'); };
 
+  const handleExerciseNameChange = (val) => {
+    setExerciseName(val);
+    if (val.trim().length > 0) {
+      const filtered = EXERCISE_DATASET.filter(ex => 
+        ex.name.toLowerCase().includes(val.toLowerCase())
+      );
+      setExerciseSuggestions(filtered.slice(0, 5));
+      setShowSuggestions(true);
+    } else {
+      setExerciseSuggestions([]);
+      setShowSuggestions(false);
+      setSelectedExercise(null);
+    }
+  };
+
+  const handleSelectSuggestion = (ex) => {
+    setExerciseName(ex.name);
+    setSelectedExercise(ex);
+    setShowSuggestions(false);
+    
+    // Auto calculate calories with selected MET and current duration
+    const weight = userProfile?.weight || 70;
+    const mins = parseFloat(exerciseDuration) || 0;
+    const cals = Math.round((ex.met * 3.5 * weight) / 200 * mins);
+    setExerciseCalories(cals > 0 ? cals.toString() : '');
+  };
+
+  const handleDurationChange = (val) => {
+    setExerciseDuration(val);
+    const weight = userProfile?.weight || 70;
+    const met = selectedExercise ? selectedExercise.met : 4.0;
+    const mins = parseFloat(val) || 0;
+    const cals = Math.round((met * 3.5 * weight) / 200 * mins);
+    setExerciseCalories(cals > 0 ? cals.toString() : '');
+  };
+
   const handleSaveExercise = (e) => {
     e.preventDefault();
     if (!exerciseName || !exerciseDuration || !exerciseCalories) {
@@ -241,9 +319,11 @@ export const Home = () => {
     setTodayLog([{
       type: 'exercise', label: exerciseName, name: exerciseName,
       duration: Number(exerciseDuration), cal: -Math.abs(Number(exerciseCalories)),
-      protein: 0, carbs: 0, fat: 0, unit: 'mins', timestamp: Date.now()
+      protein: 0, carbs: 0, fat: 0, unit: 'mins', timestamp: Date.now(),
+      exCategory: selectedExercise?.category || 'strength'
     }, ...todayLog]);
     setExerciseName(''); setExerciseDuration(''); setExerciseCalories('');
+    setSelectedExercise(null); setExerciseSuggestions([]); setShowSuggestions(false);
     setIsExerciseOpen(false);
     showToast('Exercise workout logged!', 'success');
   };
@@ -600,25 +680,50 @@ export const Home = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="flex items-center justify-between p-3.5 rounded-xl transition-all duration-200 bg-[#121212] border border-white/5 hover:border-white/10"
+                      className="relative flex items-center justify-between p-0 overflow-hidden rounded-[24px] border border-white/5 hover:border-white/10 transition-all duration-200 h-[96px] shadow-lg"
+                      style={{
+                        background: 'radial-gradient(circle at top right, rgba(168, 85, 247, 0.26) 0%, rgba(20, 20, 22, 0) 65%), radial-gradient(circle at bottom left, rgba(173, 255, 47, 0.20) 0%, rgba(20, 20, 22, 0) 65%), #141416'
+                      }}
                     >
-                      <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
-                        <div className="w-8 h-8 rounded-xl grid place-items-center bg-sky-500/10 border border-sky-500/20 flex-shrink-0">
-                          <Dumbbell className="w-4 h-4 text-sky-400" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-xs text-white truncate">{ex.name || ex.label}</p>
-                          <p className="text-[10px] mt-0.5 text-neutral-400 truncate">
-                            {ex.duration} mins • {Math.abs(ex.cal)} kcal burned
-                          </p>
-                        </div>
+                      <div className="flex flex-col justify-center min-w-0 flex-1 pl-5 py-3 pr-2 h-full">
+                        <p className="text-[10px] font-bold text-neutral-400">
+                          {ex.duration} mins • {Math.abs(ex.cal)} kcal burned
+                        </p>
+                        <p className="font-extrabold text-xs text-white mt-1 leading-tight truncate">
+                          {ex.name || ex.label}
+                        </p>
                       </div>
-                      <button onClick={() => handleDeleteItem(gi)}
-                        className="p-2 rounded-xl transition text-neutral-450 hover:text-rose-500 hover:bg-rose-500/10 flex-shrink-0 cursor-pointer"
-                        title="Delete exercise"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+
+                      {/* Icon Graphics on Right covering the row vertically */}
+                      <div className="relative h-full w-24 flex-shrink-0 border-l border-white/5 bg-[#17171d] flex items-center justify-center rounded-r-[24px] overflow-hidden">
+                        {(() => {
+                          const cat = ex.exCategory || 'strength';
+                          const isCardio = cat === 'cardio';
+                          const isFlex = cat === 'flexibility';
+                          const iconColor = isCardio ? 'text-orange-400' : isFlex ? 'text-purple-400' : 'text-sky-400';
+                          const glowColor = isCardio ? 'bg-orange-500/10 border-orange-500/20' : isFlex ? 'bg-purple-500/10 border-purple-500/20' : 'bg-sky-500/10 border-sky-500/20';
+                          
+                          return (
+                            <div className={`w-12 h-12 rounded-2xl grid place-items-center border ${glowColor} shadow-inner`}>
+                              {isCardio ? (
+                                <Flame className={`w-6 h-6 ${iconColor}`} />
+                              ) : isFlex ? (
+                                <Sparkles className={`w-6 h-6 ${iconColor}`} />
+                              ) : (
+                                <Dumbbell className={`w-6 h-6 ${iconColor}`} />
+                              )}
+                            </div>
+                          );
+                        })()}
+                        {/* Floating Action Controls */}
+                        <button 
+                          onClick={() => handleDeleteItem(gi)}
+                          className="absolute top-1 right-1 p-1.5 rounded-full bg-black/60 hover:bg-rose-600/90 text-white/90 backdrop-blur-sm transition cursor-pointer shadow active:scale-90"
+                          title="Delete exercise"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </motion.div>
                   );
                 })}
@@ -652,18 +757,38 @@ export const Home = () => {
               >
                 <h3 className="text-sm font-black uppercase tracking-wider text-white mb-5" data-i18n="log_exercise">{dict.log_exercise}</h3>
                 <form onSubmit={handleSaveExercise} className="space-y-4">
-                  <div>
+                  <div className="relative">
                     <span className="section-label block mb-1.5" data-i18n="exercise_name">{dict.exercise_name}</span>
-                    <input type="text" required placeholder="e.g. Squats, Bench Press"
-                      value={exerciseName} onChange={e => setExerciseName(e.target.value)}
-                      className="w-full px-3.5 py-3 text-xs bg-[#2c2c2e] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-[#adff2f]/50"
+                    <input type="text" required placeholder="Search e.g. Running, Bench Press..."
+                      value={exerciseName} onChange={e => handleExerciseNameChange(e.target.value)}
+                      onFocus={() => { if (exerciseName.trim().length > 0) setShowSuggestions(true); }}
+                      className="w-full px-3.5 py-3 text-xs bg-[#2c2c2e] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-[#adff2f]/50 animate-fade-in"
                     />
+                    
+                    {/* Autocomplete Dropdown */}
+                    {showSuggestions && exerciseSuggestions.length > 0 && (
+                      <div className="absolute left-0 right-0 z-50 mt-1.5 bg-[#1e1e24] border border-white/10 rounded-2xl overflow-hidden shadow-2xl divide-y divide-white/5 max-h-[180px] overflow-y-auto thin-scroll">
+                        {exerciseSuggestions.map(ex => (
+                          <button
+                            key={ex.name}
+                            type="button"
+                            onClick={() => handleSelectSuggestion(ex)}
+                            className="w-full px-4 py-3 text-left text-xs text-white hover:bg-white/[0.04] transition cursor-pointer flex justify-between items-center"
+                          >
+                            <span className="font-bold">{ex.name}</span>
+                            <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded bg-white/5 text-neutral-400 tracking-wider">
+                              {ex.category}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <span className="section-label block mb-1.5" data-i18n="duration_mins">{dict.duration_mins}</span>
                       <input type="number" required placeholder="30"
-                        value={exerciseDuration} onChange={e => setExerciseDuration(e.target.value)}
+                        value={exerciseDuration} onChange={e => handleDurationChange(e.target.value)}
                         className="w-full px-3.5 py-3 text-xs bg-[#2c2c2e] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-[#adff2f]/50"
                       />
                     </div>
@@ -671,7 +796,7 @@ export const Home = () => {
                       <span className="section-label block mb-1.5" data-i18n="calories_burned">{dict.calories_burned}</span>
                       <input type="number" required placeholder="250"
                         value={exerciseCalories} onChange={e => setExerciseCalories(e.target.value)}
-                        className="w-full px-3.5 py-3 text-xs bg-[#2c2c2e] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-[#adff2f]/50"
+                        className="w-full px-3.5 py-3 text-xs bg-[#2c2c2e] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-[#adff2f]/50 font-mono font-bold"
                       />
                     </div>
                   </div>
