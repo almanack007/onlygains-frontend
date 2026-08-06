@@ -38,7 +38,7 @@ export const Header = () => {
 
   return (
     <header 
-      className="sticky top-0 z-50 transition-all duration-300 mx-[-1rem] mt-[-1.25rem] px-4 py-3 sm:mx-[-1.5rem] sm:px-6 lg:mx-[-2rem] lg:px-8 flex items-center justify-between border-b"
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-between border-b"
       style={{
         background: isScrolled ? 'rgba(22, 22, 22, 0.88)' : 'rgba(22, 22, 22, 0)',
         backdropFilter: isScrolled ? 'blur(16px)' : 'blur(0px)',

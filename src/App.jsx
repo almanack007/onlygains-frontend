@@ -25,12 +25,12 @@ const DashboardContent = () => {
 
   return (
     <>
-      <main id="mainApp" className="min-h-screen px-4 py-5 sm:px-6 lg:px-8 pb-28 md:pb-24">
+      <main id="mainApp" className="min-h-screen pt-20 px-4 pb-28 md:pb-24 sm:px-6 lg:px-8">
         {/* Top Header Profile Widgets */}
         <Header />
         
         {/* Dynamic Tab Selector Panel */}
-        <div className="max-w-[1600px] mx-auto min-h-[75vh] mt-4">
+        <div className="max-w-[1600px] mx-auto min-h-[75vh]">
           {activeTab === 'home' && <Home />}
           {activeTab === 'progress' && <Progress />}
           {activeTab === 'lens' && <Lens />}
