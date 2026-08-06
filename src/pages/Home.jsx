@@ -501,19 +501,12 @@ export const Home = () => {
             <h2 className="text-base font-extrabold text-white">
               {lang === 'en' ? 'Daily Meal' : dict.todays_meals}
             </h2>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsManualFoodModalOpen(true)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#adff2f] hover:bg-[#9eff1a] text-slate-950 text-[10px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-[0_0_12px_rgba(173,255,47,0.2)] flex-shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[3]" /> Add Food
-              </button>
-              {totals.foods.length > 0 && (
-                <button onClick={handleClearAll} className="text-[10px] font-black uppercase tracking-wider transition text-rose-500 hover:text-rose-400 cursor-pointer flex-shrink-0 px-1 py-1">
-                  {dict.clear_all}
-                </button>
-              )}
-            </div>
+            <button
+              onClick={() => setIsManualFoodModalOpen(true)}
+              className="text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition text-[#adff2f] hover:text-[#c8ff6b] cursor-pointer px-2 py-1 rounded-lg hover:bg-white/5 active:scale-95 flex-shrink-0"
+            >
+              <PlusCircle className="w-4 h-4" /> Add Food
+            </button>
           </div>
 
           {/* Scroll fade dissolve container */}
