@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../context/AppContext';
 import { Camera, Search, PlusCircle, Sparkles, Loader, RotateCw, Image as ImageIcon, X, HelpCircle, Dumbbell } from 'lucide-react';
 
@@ -111,6 +112,14 @@ export const Lens = () => {
       stopCamera();
     };
   }, []);
+
+  // Ensure stream binding is persistent in portal rendering
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(e => console.log('Stream play error:', e));
+    }
+  }, [isCameraActive]);
 
   const handleBack = () => {
     stopCamera();
@@ -266,32 +275,26 @@ export const Lens = () => {
         <p className="text-xs text-slate-500 text-left mb-6 leading-relaxed">Point your camera or upload a photo to identify nutrients instantly.</p>
 
         {/* Viewport Frame */}
-        <div className={isCameraActive 
-          ? "fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center overflow-hidden"
-          : "relative w-full aspect-[9/16] sm:aspect-[3/4] max-h-[550px] rounded-[24px] border border-slate-800 bg-slate-950 flex flex-col items-center justify-center overflow-hidden shadow-2xl"
-        }>
-          
-          {/* Top Camera Header bar */}
-          {isCameraActive && (
+        {isCameraActive ? createPortal(
+          <div className="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center overflow-hidden">
+            {/* Top Camera Header bar */}
             <div className="absolute top-0 left-0 right-0 p-4 pt-12 sm:pt-6 flex items-center justify-between z-20 bg-gradient-to-b from-black/75 to-transparent text-slate-100">
               <button 
                 onClick={handleBack} 
-                className="bg-black/50 hover:bg-black/75 p-2.5 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition"
+                className="bg-black/50 hover:bg-black/75 p-2.5 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition pointer-events-auto cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
               <h3 className="font-extrabold text-xs uppercase tracking-widest drop-shadow-md">AI Visual Scan</h3>
               <button 
                 onClick={() => showToast('Position food inside the focus frame to scan.', 'info')} 
-                className="bg-black/50 hover:bg-black/75 p-2.5 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition"
+                className="bg-black/50 hover:bg-black/75 p-2.5 rounded-full border border-white/10 text-white/90 backdrop-blur-sm transition pointer-events-auto cursor-pointer"
               >
                 <HelpCircle className="w-4 h-4" />
               </button>
             </div>
-          )}
 
-          {/* Live Video Feed */}
-          {isCameraActive && (
+            {/* Live Video Feed */}
             <video 
               ref={videoRef} 
               autoPlay 
@@ -299,15 +302,8 @@ export const Lens = () => {
               muted
               className="w-full h-full object-cover"
             />
-          )}
 
-          {/* Captured Preview Image */}
-          {capturedImage && (
-            <img src={capturedImage} className="w-full h-full object-cover" alt="Captured Meal" />
-          )}
-
-          {/* Focus Targets Overlay frame */}
-          {isCameraActive && (
+            {/* Focus Targets Overlay frame */}
             <div className="absolute inset-0 flex flex-col items-center justify-center p-4 z-10 pointer-events-none">
               <div className="relative w-56 h-56 sm:w-64 sm:h-64 border-2 border-transparent">
                 {/* Focus box corners */}
@@ -320,72 +316,76 @@ export const Lens = () => {
                 Focus on plates and items home to the foods
               </p>
             </div>
-          )}
 
-          {/* Default Placeholder View */}
-          {!isCameraActive && !capturedImage && (
-            <div className="flex flex-col items-center justify-center gap-3 p-6 text-center z-10">
-              <Camera className="w-12 h-12 text-emerald-500 mb-2 animate-pulse" />
-              <p className="text-xs text-slate-500 font-extrabold uppercase tracking-wider">
-                {cameraError || 'Camera stream is ready'}
-              </p>
-              
-              <div className="flex flex-col gap-2 mt-4 w-44">
-                <button 
-                  onClick={() => startCamera()} 
-                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition neon"
-                >
-                  Start Camera
-                </button>
-                <button 
-                  onClick={() => fileInputRef.current?.click()} 
-                  className="bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-800 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition"
-                >
-                  Upload Photo
-                </button>
-              </div>
-            </div>
-          )}
+            {/* Camera Scanning Overlay Lines */}
+            {isScanning && <div className="scanner-line"></div>}
 
-          {/* Camera Scanning Overlay Lines */}
-          {isScanning && <div className="scanner-line"></div>}
-
-          {/* Bottom Tabs selector pills */}
-          {isCameraActive && (
-            <div className="absolute bottom-28 left-0 right-0 flex justify-center z-20">
+            {/* Bottom Tabs selector pills */}
+            <div className="absolute bottom-28 left-0 right-0 flex justify-center z-20 pointer-events-auto">
               <div className="bg-black/65 backdrop-blur-md border border-white/10 rounded-full p-1 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider">
                 <button className="bg-white text-slate-950 px-4 py-2 rounded-full flex items-center gap-1 transition-all">
                   <Camera className="w-3.5 h-3.5" /> AI Camera
                 </button>
                 <button 
                   onClick={toggleFacingMode}
-                  className="text-slate-350 hover:text-white px-4 py-2 rounded-full flex items-center gap-1 transition-all"
+                  className="text-slate-350 hover:text-white px-4 py-2 rounded-full flex items-center gap-1 transition-all cursor-pointer"
                 >
                   <RotateCw className="w-3.5 h-3.5" /> Flip
                 </button>
                 <button 
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-slate-350 hover:text-white px-4 py-2 rounded-full flex items-center gap-1 transition-all"
+                  className="text-slate-350 hover:text-white px-4 py-2 rounded-full flex items-center gap-1 transition-all cursor-pointer"
                 >
                   <ImageIcon className="w-3.5 h-3.5" /> Gallery
                 </button>
               </div>
             </div>
-          )}
 
-          {/* Bottom Shutter Capture Trigger Button */}
-          {isCameraActive && (
-            <div className="absolute bottom-10 left-0 right-0 flex justify-center items-center z-20">
+            {/* Bottom Shutter Capture Trigger Button */}
+            <div className="absolute bottom-10 left-0 right-0 flex justify-center items-center z-20 pointer-events-auto">
               <button 
                 onClick={captureSnapshot} 
-                className="w-16 h-16 rounded-full border-4 border-white bg-transparent flex items-center justify-center p-1 hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+                className="w-16 h-16 rounded-full border-4 border-white bg-transparent flex items-center justify-center p-1 hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.4)] cursor-pointer"
                 title="Capture Photo"
               >
                 <div className="w-full h-full rounded-full bg-white"></div>
               </button>
             </div>
-          )}
-        </div>
+          </div>,
+          document.body
+        ) : (
+          <div className="relative w-full aspect-[9/16] sm:aspect-[3/4] max-h-[550px] rounded-[24px] border border-slate-800 bg-slate-950 flex flex-col items-center justify-center overflow-hidden shadow-2xl">
+            {/* Captured Preview Image */}
+            {capturedImage && (
+              <img src={capturedImage} className="w-full h-full object-cover animate-fade-in" alt="Captured Meal" />
+            )}
+
+            {/* Default Placeholder View */}
+            {!capturedImage && (
+              <div className="flex flex-col items-center justify-center gap-3 p-6 text-center z-10 animate-fade-in">
+                <Camera className="w-12 h-12 text-emerald-500 mb-2 animate-pulse" />
+                <p className="text-xs text-slate-500 font-extrabold uppercase tracking-wider">
+                  {cameraError || 'Camera stream is ready'}
+                </p>
+                
+                <div className="flex flex-col gap-2 mt-4 w-44">
+                  <button 
+                    onClick={() => startCamera()} 
+                    className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition neon cursor-pointer"
+                  >
+                    Start Camera
+                  </button>
+                  <button 
+                    onClick={() => fileInputRef.current?.click()} 
+                    className="bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-800 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition cursor-pointer"
+                  >
+                    Upload Photo
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Hidden Canvas and File Inputs */}
         <canvas ref={canvasRef} className="hidden" />
