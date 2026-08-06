@@ -201,11 +201,11 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
                     className="w-full flex items-center justify-between p-3 bg-white/[0.01] border border-white/5 hover:border-white/10 rounded-2xl transition duration-200 text-left cursor-pointer active:scale-[0.98]"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
-                      <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 flex-shrink-0 shadow-md shadow-black/50">
+                      <div className="w-16 h-16 rounded-none overflow-hidden border border-white/10 bg-neutral-950 flex-shrink-0 shadow-md">
                         <img 
                           src={food.image || getHDHighlightFoodImage(food.name, food.category)} 
                           alt={food.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          className="w-full h-full object-cover rounded-none transition-transform duration-300 group-hover:scale-105"
                           onError={(e) => {
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = getHDHighlightFoodImage(food.name, food.category);
@@ -239,11 +239,11 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
                 <div className="w-full max-w-sm glass p-6 slide-up text-left shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 flex-shrink-0 shadow-lg shadow-black/60">
+                    <div className="w-16 h-16 rounded-none overflow-hidden border border-white/10 bg-neutral-950 flex-shrink-0 shadow-lg shadow-black/60">
                       <img 
                         src={selectedFoodItem.image || getHDHighlightFoodImage(selectedFoodItem.name, selectedFoodItem.category)} 
                         alt={selectedFoodItem.name} 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover rounded-none"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = getHDHighlightFoodImage(selectedFoodItem.name, selectedFoodItem.category);

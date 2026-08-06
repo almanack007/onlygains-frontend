@@ -460,14 +460,14 @@ export const Home = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="flex items-center justify-between p-3 rounded-2xl transition-all duration-200 bg-[#2c2c2e] border border-white/5 hover:border-white/10"
+                      className="flex items-center justify-between p-3 rounded-xl transition-all duration-200 bg-[#121212] border border-white/5 hover:border-white/10"
                     >
-                      <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
-                        <div className="w-11 h-11 rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 flex-shrink-0 shadow-md shadow-black/40">
+                      <div className="flex items-center gap-3.5 min-w-0 flex-1 pr-2">
+                        <div className="w-16 h-16 rounded-none overflow-hidden border border-white/10 bg-neutral-950 flex-shrink-0 shadow-md">
                           <img
                             src={food.image || getHDHighlightFoodImage(food.name || food.label, food.category)}
                             alt={food.name || food.label}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover rounded-none"
                             onError={(e) => {
                               e.currentTarget.onerror = null;
                               e.currentTarget.src = getHDHighlightFoodImage(food.name || food.label, food.category);
@@ -534,7 +534,7 @@ export const Home = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="flex items-center justify-between p-3.5 rounded-2xl transition-all duration-200 bg-[#2c2c2e] border border-white/5 hover:border-white/10"
+                      className="flex items-center justify-between p-3.5 rounded-xl transition-all duration-200 bg-[#121212] border border-white/5 hover:border-white/10"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
                         <div className="w-8 h-8 rounded-xl grid place-items-center bg-sky-500/10 border border-sky-500/20 flex-shrink-0">
