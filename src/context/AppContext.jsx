@@ -278,6 +278,8 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : null;
   });
 
+  const [isPro, setIsPro] = useState(false);
+
   // Today log details
   const getTodayKey = () => {
     const d = new Date();
@@ -405,6 +407,10 @@ export const AppProvider = ({ children }) => {
           setLang(data.profile.language);
           localStorage.setItem('fittrack_language', data.profile.language);
         }
+      }
+
+      if (data.isPro !== undefined) {
+        setIsPro(!!data.isPro);
       }
 
       const savedLogDate = localStorage.getItem('fittrack_log_date');
@@ -626,6 +632,18 @@ export const AppProvider = ({ children }) => {
     }
   }, [currentUser]);
 
+  // Listen for payment success message from checkout popup
+  useEffect(() => {
+    const handlePaymentMessage = (event) => {
+      if (event.data && event.data.type === 'PAYMENT_SUCCESS') {
+        setIsPro(true);
+        showToast('🎉 Welcome to OnlyGains PRO!', 'success');
+      }
+    };
+    window.addEventListener('message', handlePaymentMessage);
+    return () => window.removeEventListener('message', handlePaymentMessage);
+  }, []);
+
   // Handle viewDateKey changes
   useEffect(() => {
     if (currentUser) {
@@ -705,6 +723,8 @@ export const AppProvider = ({ children }) => {
         localStorage.setItem('fittrack_profile', JSON.stringify(prof));
         saveDailyToDatabase(currentUser?.id, viewDateKey, prof);
       },
+      isPro,
+      setIsPro,
 
       // Tracking variables
       viewDateKey,

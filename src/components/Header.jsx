@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Bot } from 'lucide-react';
 
 export const Header = () => {
-  const { currentUser, userProfile, goalConfigs, syncStatus, signOut, setActiveTab, isCoachOpen, setIsCoachOpen } = useApp();
+  const { currentUser, userProfile, goalConfigs, syncStatus, signOut, setActiveTab, isCoachOpen, setIsCoachOpen, isPro } = useApp();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -54,6 +54,11 @@ export const Header = () => {
         <span className="font-extrabold tracking-[0.25em] text-sm uppercase text-white font-sans">
           OnlyGains
         </span>
+        {isPro && (
+          <span className="text-[7.5px] font-black uppercase bg-gradient-to-r from-amber-400 to-amber-600 text-black px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(251,191,36,0.5)] select-none">
+            PRO
+          </span>
+        )}
       </div>
 
       {/* Right: Actions (AI Coach Trigger + Avatar) */}

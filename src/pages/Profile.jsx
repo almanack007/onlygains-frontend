@@ -6,7 +6,7 @@ export const Profile = () => {
   const { 
     currentUser, loginUser, userProfile, setUserProfile, goalConfigs,
     indianLanguages, lang, setLang, translations, applyTheme, showToast,
-    apiBase, signOut
+    apiBase, signOut, isPro
   } = useApp();
 
   const dict = translations[lang] || translations.en;
@@ -155,24 +155,42 @@ export const Profile = () => {
     <div id="panelProfile" className="tab-panel max-w-4xl mx-auto space-y-6 pb-24 slide-up">
       
       {/* Premium Subscription Plan Banner Card */}
-      <div className="glass p-6 border border-emerald-500/20 bg-gradient-to-r from-emerald-500/5 to-slate-900/40 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="absolute -right-10 -bottom-10 w-40 h-40 rounded-full bg-emerald-500/10 blur-[60px] pointer-events-none"></div>
-        <div className="space-y-2 flex-1">
-          <span className="text-[9px] font-black uppercase tracking-widest bg-emerald-500 text-slate-950 px-2.5 py-1 rounded-full shadow-[0_0_10px_rgba(204,255,0,0.2)] inline-block">
-            FitTrack Pro Elite
-          </span>
-          <h2 className="text-lg font-black uppercase tracking-wider text-slate-200">Unlock Premium Analytics</h2>
-          <p className="text-xs text-slate-500 leading-relaxed max-w-xl">
-            Get unlimited AI meal scans, deep nutritional audits, full database synchronizations, and 24/7 access to your personal AI fitness coach.
-          </p>
+      {isPro ? (
+        <div className="glass p-6 border border-amber-500/25 bg-gradient-to-r from-amber-500/5 to-slate-900/40 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 rounded-full bg-amber-500/10 blur-[60px] pointer-events-none"></div>
+          <div className="space-y-2 flex-1 text-left">
+            <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500 text-slate-950 px-2.5 py-1 rounded-full shadow-[0_0_12px_rgba(251,191,36,0.3)] inline-block">
+              OnlyGains PRO Elite
+            </span>
+            <h2 className="text-lg font-black uppercase tracking-wider text-slate-200 flex items-center gap-1.5">★ PRO Member Active</h2>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-xl">
+              Congratulations! You are on the PRO plan. You have unlocked advanced AI scanning, detailed cumulative timeline graphs, and full server databases integrations.
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-black uppercase tracking-wider select-none flex-shrink-0">
+            <ShieldCheck className="w-4 h-4" /> Active Subscriber
+          </div>
         </div>
-        <button 
-          onClick={() => setIsBillingOpen(true)}
-          className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-6 py-3.5 rounded-2xl transition duration-300 text-xs uppercase tracking-wider flex items-center justify-center gap-2 neon flex-shrink-0"
-        >
-          <CreditCard className="w-4 h-4" /> Upgrade for £9.99/mo
-        </button>
-      </div>
+      ) : (
+        <div className="glass p-6 border border-emerald-500/20 bg-gradient-to-r from-emerald-500/5 to-slate-900/40 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 rounded-full bg-emerald-500/10 blur-[60px] pointer-events-none"></div>
+          <div className="space-y-2 flex-1 text-left">
+            <span className="text-[9px] font-black uppercase tracking-widest bg-emerald-500 text-slate-950 px-2.5 py-1 rounded-full shadow-[0_0_10px_rgba(204,255,0,0.2)] inline-block">
+              OnlyGains PRO
+            </span>
+            <h2 className="text-lg font-black uppercase tracking-wider text-slate-200">Unlock Premium Analytics</h2>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-xl">
+              Unlock cumulative metrics timeline graphs, full database backups, and unlimited log history for only ₹120 per month.
+            </p>
+          </div>
+          <button 
+            onClick={() => window.open(`${apiBase}/pay?userId=${currentUser.id}`, '_blank')}
+            className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-6 py-3.5 rounded-2xl transition duration-300 text-xs uppercase tracking-wider flex items-center justify-center gap-2 neon flex-shrink-0 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-95"
+          >
+            <CreditCard className="w-4 h-4" /> Upgrade to PRO for ₹120/mo
+          </button>
+        </div>
+      )}
 
       {/* Dynamic Profile and Personal Info Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
