@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ManualAddFoodModal } from '../components/ManualAddFoodModal';
 import { getHDHighlightFoodImage } from '../services/foodApi';
 
-const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor }) => {
+const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor, onClick }) => {
   const radius = 30;
   const strokeWidth = 12;
   const circ = 2 * Math.PI * radius;
@@ -18,7 +18,8 @@ const MacroCard = ({ title, value, target, unit, percent, strokeColor, glowColor
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
-      className="glass p-3.5 sm:p-4 aspect-square flex flex-col items-center justify-between transition-all duration-200 hover:border-white/[0.15] active:scale-[0.98] select-none text-center w-full"
+      onClick={onClick}
+      className="glass p-3.5 sm:p-4 aspect-square flex flex-col items-center justify-between transition-all duration-200 hover:border-white/[0.15] active:scale-[0.98] select-none text-center w-full cursor-pointer hover:bg-white/[0.02]"
     >
       {/* Title */}
       <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 truncate w-full">
@@ -161,6 +162,7 @@ export const Home = () => {
   const [exerciseSuggestions, setExerciseSuggestions] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedMacroDetails, setSelectedMacroDetails] = useState(null);
   const [isWaterModalOpen, setIsWaterModalOpen] = useState(false);
   const [isManualFoodModalOpen, setIsManualFoodModalOpen] = useState(false);
   const [exactWaterInput, setExactWaterInput] = useState('');
@@ -414,6 +416,16 @@ export const Home = () => {
               percent={calPercent}
               strokeColor="#adff2f"
               glowColor="rgba(173,255,47,0.3)"
+              onClick={() => setSelectedMacroDetails({
+                key: 'calories',
+                title: 'Calories',
+                value: consumed,
+                target: targetCalories + burned,
+                unit: 'kcal',
+                percent: calPercent,
+                strokeColor: '#adff2f',
+                glowColor: 'rgba(173,255,47,0.3)'
+              })}
             />
             <MacroCard
               title="Protein"
@@ -423,6 +435,16 @@ export const Home = () => {
               percent={proteinPercent}
               strokeColor="#38bdf8"
               glowColor="rgba(56,189,248,0.3)"
+              onClick={() => setSelectedMacroDetails({
+                key: 'protein',
+                title: 'Protein',
+                value: Math.round(totals.protein),
+                target: targetProtein,
+                unit: 'g',
+                percent: proteinPercent,
+                strokeColor: '#38bdf8',
+                glowColor: 'rgba(56,189,248,0.3)'
+              })}
             />
             <MacroCard
               title="Carbs"
@@ -432,6 +454,16 @@ export const Home = () => {
               percent={carbsPercent}
               strokeColor="#fbbf24"
               glowColor="rgba(251,191,36,0.3)"
+              onClick={() => setSelectedMacroDetails({
+                key: 'carbs',
+                title: 'Carbs',
+                value: Math.round(totals.carbs),
+                target: targetCarbs,
+                unit: 'g',
+                percent: carbsPercent,
+                strokeColor: '#fbbf24',
+                glowColor: 'rgba(251,191,36,0.3)'
+              })}
             />
             <MacroCard
               title="Fat"
@@ -441,6 +473,16 @@ export const Home = () => {
               percent={fatPercent}
               strokeColor="#f472b6"
               glowColor="rgba(244,114,182,0.3)"
+              onClick={() => setSelectedMacroDetails({
+                key: 'fat',
+                title: 'Fat',
+                value: Math.round(totals.fat),
+                target: targetFat,
+                unit: 'g',
+                percent: fatPercent,
+                strokeColor: '#f472b6',
+                glowColor: 'rgba(244,114,182,0.3)'
+              })}
             />
           </div>
         </div>
@@ -936,6 +978,365 @@ export const Home = () => {
                     </div>
                   </form>
                 </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* ── Macro Detail Modal ─────────────────────────────────────────── */}
+      {createPortal(
+        <AnimatePresence>
+          {selectedMacroDetails && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedMacroDetails(null)}
+                onTouchMove={(e) => e.stopPropagation()}
+                className="fixed inset-0 bg-black/70 backdrop-blur-sm touch-none pointer-events-auto"
+              />
+              
+              {/* Modal Window */}
+              <motion.div
+                initial={{ scale: 0.94, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.94, opacity: 0 }}
+                transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+                className="relative bg-[#161616] border border-white/10 rounded-[28px] p-5 sm:p-6 z-50 overflow-y-auto overscroll-contain w-full max-w-[440px] max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-left pointer-events-auto"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-sm font-black uppercase tracking-wider text-white">
+                    {selectedMacroDetails.title} Analysis
+                  </h3>
+                  <button
+                    onClick={() => setSelectedMacroDetails(null)}
+                    className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-black uppercase tracking-wider text-white hover:bg-white/10 active:scale-95 transition cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
+
+                {/* Big Card Ring */}
+                <div className="flex flex-col items-center justify-center p-4 bg-white/[0.02] border border-white/5 rounded-3xl mb-5">
+                  <div className="relative flex items-center justify-center w-28 h-28 my-1">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r="30"
+                        fill="none"
+                        stroke="rgba(255, 255, 255, 0.05)"
+                        strokeWidth="10"
+                      />
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r="30"
+                        fill="none"
+                        stroke={selectedMacroDetails.strokeColor}
+                        strokeWidth="10"
+                        strokeDasharray={2 * Math.PI * 30}
+                        strokeDashoffset={
+                          2 * Math.PI * 30 -
+                          (Math.min(selectedMacroDetails.percent, 100) / 100) * 2 * Math.PI * 30
+                        }
+                        strokeLinecap="round"
+                        style={{
+                          filter: `drop-shadow(0 0 6px ${selectedMacroDetails.glowColor})`,
+                        }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-base font-extrabold text-white">
+                        {selectedMacroDetails.percent}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-center mt-2.5">
+                    <p className="text-sm font-black text-white">
+                      {selectedMacroDetails.value} <span className="text-neutral-400 font-bold text-xs">/ {selectedMacroDetails.target} {selectedMacroDetails.unit}</span>
+                    </p>
+                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mt-0.5">
+                      Daily Progress
+                    </p>
+                  </div>
+                </div>
+
+                {/* Graph Title */}
+                <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2 px-1">
+                  {selectedMacroDetails.key === 'calories' ? 'Calories Eaten vs Workout Burned' : 'Intake Timeline'}
+                </span>
+
+                {/* Graph Viewport */}
+                <div className="bg-[#121212] border border-white/5 rounded-3xl p-4 relative overflow-hidden shadow-inner select-none">
+                  {(() => {
+                    const metricKey = selectedMacroDetails.key;
+                    
+                    // Filter and sort food items
+                    const foodLogs = [...todayLog]
+                      .filter(x => x.type !== 'exercise' && (x[metricKey] > 0 || (metricKey === 'calories' && x.cal > 0)))
+                      .sort((a, b) => a.timestamp - b.timestamp);
+
+                    // Filter and sort exercise items
+                    const exerciseLogs = [...todayLog]
+                      .filter(x => x.type === 'exercise' && x.cal !== 0)
+                      .sort((a, b) => a.timestamp - b.timestamp);
+
+                    // Define chart coordinates:
+                    // Width: 320, Height: 150
+                    // Timeline x scale: 6:00 AM (hour 6) to 10:00 PM (hour 22)
+                    const minHr = 6;
+                    const maxHr = 22;
+                    const getX = (timestamp) => {
+                      const dt = new Date(timestamp);
+                      const hr = dt.getHours() + dt.getMinutes() / 60;
+                      const pct = Math.max(0, Math.min(1, (hr - minHr) / (maxHr - minHr)));
+                      return 35 + pct * 260; // 35 to 295
+                    };
+
+                    // Y scale: 0 to max val
+                    const targetVal = selectedMacroDetails.target || 100;
+                    
+                    // Cumulative Food
+                    let currentFoodSum = 0;
+                    const foodPoints = [{ x: 35, y: 120, val: 0 }];
+                    foodLogs.forEach(log => {
+                      const val = metricKey === 'calories' ? (log.cal || 0) : (log[metricKey] || 0);
+                      currentFoodSum += val;
+                      foodPoints.push({
+                        x: getX(log.timestamp),
+                        y: 0, // calculated below
+                        val: currentFoodSum,
+                        label: log.name || log.label
+                      });
+                    });
+
+                    // Cumulative Exercise (only if Calories)
+                    let currentExerciseSum = 0;
+                    const exercisePoints = [{ x: 35, y: 120, val: 0 }];
+                    if (metricKey === 'calories') {
+                      exerciseLogs.forEach(log => {
+                        const val = Math.abs(log.cal || 0);
+                        currentExerciseSum += val;
+                        exercisePoints.push({
+                          x: getX(log.timestamp),
+                          y: 0, // calculated below
+                          val: currentExerciseSum,
+                          label: log.name || log.label
+                        });
+                      });
+                    }
+
+                    // Determine max value for Y-axis scale matching
+                    const maxVal = Math.max(
+                      targetVal,
+                      currentFoodSum,
+                      currentExerciseSum,
+                      50 // minimum scale threshold
+                    );
+
+                    const getY = (val) => {
+                      const pct = val / maxVal;
+                      return 120 - pct * 95; // 25 to 120
+                    };
+
+                    // Compute final Y positions
+                    foodPoints.forEach(pt => { pt.y = getY(pt.val); });
+                    exercisePoints.forEach(pt => { pt.y = getY(pt.val); });
+
+                    // Generate SVG Paths
+                    const buildSvgPath = (points) => {
+                      if (points.length < 2) return '';
+                      let d = `M ${points[0].x} ${points[0].y}`;
+                      for (let i = 1; i < points.length; i++) {
+                        // Smooth cubic bezier calculation
+                        const prev = points[i - 1];
+                        const curr = points[i];
+                        const cpX1 = prev.x + (curr.x - prev.x) / 2;
+                        const cpY1 = prev.y;
+                        const cpX2 = prev.x + (curr.x - prev.x) / 2;
+                        const cpY2 = curr.y;
+                        d += ` C ${cpX1} ${cpY1}, ${cpX2} ${cpY2}, ${curr.x} ${curr.y}`;
+                      }
+                      return d;
+                    };
+
+                    const foodPathD = buildSvgPath(foodPoints);
+                    const exercisePathD = metricKey === 'calories' ? buildSvgPath(exercisePoints) : '';
+
+                    // Area Paths
+                    const foodAreaD = foodPoints.length >= 2 
+                      ? `${foodPathD} L ${foodPoints[foodPoints.length - 1].x} 120 L 35 120 Z` 
+                      : '';
+                    const exerciseAreaD = (metricKey === 'calories' && exercisePoints.length >= 2)
+                      ? `${exercisePathD} L ${exercisePoints[exercisePoints.length - 1].x} 120 L 35 120 Z`
+                      : '';
+
+                    // Target Y Line
+                    const targetY = getY(targetVal);
+
+                    return (
+                      <svg viewBox="0 0 320 150" className="w-full h-auto overflow-visible select-none">
+                        <defs>
+                          {/* Food Glow/Area Gradients */}
+                          <linearGradient id="foodAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={selectedMacroDetails.strokeColor} stopOpacity="0.25" />
+                            <stop offset="100%" stopColor={selectedMacroDetails.strokeColor} stopOpacity="0.00" />
+                          </linearGradient>
+                          {/* Exercise Area Gradients */}
+                          <linearGradient id="exerciseAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#f97316" stopOpacity="0.25" />
+                            <stop offset="100%" stopColor="#f97316" stopOpacity="0.00" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Grid Lines */}
+                        <line x1="35" y1="120" x2="295" y2="120" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                        <line x1="35" y1="72" x2="295" y2="72" stroke="rgba(255,255,255,0.03)" strokeWidth="1" strokeDasharray="3,3" />
+                        <line x1="35" y1="25" x2="295" y2="25" stroke="rgba(255,255,255,0.03)" strokeWidth="1" strokeDasharray="3,3" />
+
+                        {/* Horizontal Target Line */}
+                        {targetY >= 25 && targetY <= 120 && (
+                          <g>
+                            <line 
+                              x1="35" 
+                              y1={targetY} 
+                              x2="295" 
+                              y2={targetY} 
+                              stroke="rgba(255,255,255,0.15)" 
+                              strokeWidth="1.5" 
+                              strokeDasharray="4,4" 
+                            />
+                            <text 
+                              x="298" 
+                              y={targetY + 3.5} 
+                              fill="rgba(255,255,255,0.3)" 
+                              fontSize="7" 
+                              fontWeight="bold" 
+                              textAnchor="start"
+                            >
+                              GOAL
+                            </text>
+                          </g>
+                        )}
+
+                        {/* RENDER EXERCISE SHADING & PATH (Calories View ONLY) */}
+                        {metricKey === 'calories' && exercisePoints.length >= 2 && (
+                          <g>
+                            <path d={exerciseAreaD} fill="url(#exerciseAreaGrad)" />
+                            <path 
+                              d={exercisePathD} 
+                              fill="none" 
+                              stroke="#f97316" 
+                              strokeWidth="2.5" 
+                              strokeLinecap="round" 
+                              style={{ filter: 'drop-shadow(0 0 4px rgba(249,115,22,0.45))' }}
+                            />
+                            {/* Exercise Markers */}
+                            {exercisePoints.slice(1).map((pt, i) => (
+                              <g key={`ex-pt-${i}`}>
+                                <circle 
+                                  cx={pt.x} 
+                                  cy={pt.y} 
+                                  r="4.5" 
+                                  fill="#161616" 
+                                  stroke="#f97316" 
+                                  strokeWidth="2" 
+                                />
+                                <circle 
+                                  cx={pt.x} 
+                                  cy={pt.y} 
+                                  r="1.5" 
+                                  fill="#f97316" 
+                                />
+                              </g>
+                            ))}
+                          </g>
+                        )}
+
+                        {/* RENDER FOOD SHADING & PATH (All Views) */}
+                        {foodPoints.length >= 2 && (
+                          <g>
+                            <path d={foodAreaD} fill="url(#foodAreaGrad)" />
+                            <path 
+                              d={foodPathD} 
+                              fill="none" 
+                              stroke={selectedMacroDetails.strokeColor} 
+                              strokeWidth="2.5" 
+                              strokeLinecap="round" 
+                              style={{ filter: `drop-shadow(0 0 4px ${selectedMacroDetails.glowColor})` }}
+                            />
+                            {/* Food Markers */}
+                            {foodPoints.slice(1).map((pt, i) => (
+                              <g key={`food-pt-${i}`}>
+                                <circle 
+                                  cx={pt.x} 
+                                  cy={pt.y} 
+                                  r="4.5" 
+                                  fill="#161616" 
+                                  stroke={selectedMacroDetails.strokeColor} 
+                                  strokeWidth="2" 
+                                />
+                                <circle 
+                                  cx={pt.x} 
+                                  cy={pt.y} 
+                                  r="1.5" 
+                                  fill={selectedMacroDetails.strokeColor} 
+                                />
+                              </g>
+                            ))}
+                          </g>
+                        )}
+
+                        {/* Fallback Empty Graph State Illustration */}
+                        {foodPoints.length < 2 && (metricKey !== 'calories' || exercisePoints.length < 2) && (
+                          <text 
+                            x="160" 
+                            y="75" 
+                            fill="rgba(255,255,255,0.12)" 
+                            fontSize="9" 
+                            fontWeight="bold" 
+                            textAnchor="middle" 
+                            letterSpacing="0.5"
+                          >
+                            NO ENTRIES LOGGED TODAY
+                          </text>
+                        )}
+
+                        {/* Y-axis Labels */}
+                        <text x="30" y="123.5" fill="rgba(255,255,255,0.2)" fontSize="7" fontWeight="black" textAnchor="end">0</text>
+                        <text x="30" y="75.5" fill="rgba(255,255,255,0.2)" fontSize="7" fontWeight="black" textAnchor="end">{Math.round(maxVal / 2)}</text>
+                        <text x="30" y="28.5" fill="rgba(255,255,255,0.2)" fontSize="7" fontWeight="black" textAnchor="end">{Math.round(maxVal)}</text>
+
+                        {/* X-axis Timestamps */}
+                        <text x="35" y="138" fill="rgba(255,255,255,0.2)" fontSize="7.5" fontWeight="black" textAnchor="middle">6 AM</text>
+                        <text x="100" y="138" fill="rgba(255,255,255,0.2)" fontSize="7.5" fontWeight="black" textAnchor="middle">10 AM</text>
+                        <text x="165" y="138" fill="rgba(255,255,255,0.2)" fontSize="7.5" fontWeight="black" textAnchor="middle">2 PM</text>
+                        <text x="230" y="138" fill="rgba(255,255,255,0.2)" fontSize="7.5" fontWeight="black" textAnchor="middle">6 PM</text>
+                        <text x="295" y="138" fill="rgba(255,255,255,0.2)" fontSize="7.5" fontWeight="black" textAnchor="middle">10 PM</text>
+                      </svg>
+                    );
+                  })()}
+                </div>
+
+                {/* Legend explanation for double calorie curves */}
+                {selectedMacroDetails.key === 'calories' && (
+                  <div className="flex justify-center items-center gap-5 mt-4 text-[10px] font-black uppercase tracking-wider select-none px-1">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#adff2f]" />
+                      <span className="text-white">Food Intake ({Math.round(consumed)} kcal)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#f97316]" />
+                      <span className="text-white">Exercises Burned ({Math.round(burned)} kcal)</span>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </div>
           )}
