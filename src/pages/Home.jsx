@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../context/AppContext';
 import { Plus, Trash2, Dumbbell, Sparkles, PlusCircle, Utensils } from 'lucide-react';
 import { WaterTank } from '../components/WaterTank';
@@ -624,8 +625,8 @@ export const Home = () => {
 
       {/* ── Log Water Modal (Redesigned Screen) ───────────────────────────────── */}
       <AnimatePresence>
-        {isWaterModalOpen && (
-          <>
+        {isWaterModalOpen && createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -633,7 +634,7 @@ export const Home = () => {
               exit={{ opacity: 0 }}
               onClick={() => setIsWaterModalOpen(false)}
               onTouchMove={(e) => e.stopPropagation()}
-              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm touch-none"
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm touch-none pointer-events-auto"
             />
             
             {/* Floating Window in the Middle */}
@@ -642,7 +643,7 @@ export const Home = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.94, opacity: 0 }}
               transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#161616] border border-white/10 rounded-[28px] p-5 sm:p-6 z-50 overflow-y-auto overscroll-contain w-[90%] max-w-[420px] max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-left"
+              className="relative bg-[#161616] border border-white/10 rounded-[28px] p-5 sm:p-6 z-50 overflow-y-auto overscroll-contain w-full max-w-[420px] max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-left pointer-events-auto"
             >
 
               {/* Header */}
@@ -746,7 +747,8 @@ export const Home = () => {
                 </form>
               </div>
             </motion.div>
-          </>
+          </div>,
+          document.body
         )}
       </AnimatePresence>
 
