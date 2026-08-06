@@ -564,22 +564,23 @@ export const Home = () => {
 
       {/* ── Log Exercise Modal ────────────────────────────── */}
       <AnimatePresence>
-        {isExerciseOpen && (
-          <>
+        {isExerciseOpen && createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
+            {/* Backdrop */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsExerciseOpen(false)}
               onTouchMove={(e) => e.stopPropagation()}
-              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm touch-none"
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm touch-none pointer-events-auto"
             />
             <motion.div 
               initial={{ scale: 0.92, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.92, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90%] max-w-sm glass p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.7)] overscroll-contain max-h-[85vh] overflow-y-auto"
+              className="relative w-full max-w-sm bg-[#161616] border border-white/10 rounded-[28px] p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.7)] overscroll-contain max-h-[85vh] overflow-y-auto pointer-events-auto"
             >
               <h3 className="text-sm font-black uppercase tracking-wider text-white mb-5" data-i18n="log_exercise">{dict.log_exercise}</h3>
               <form onSubmit={handleSaveExercise} className="space-y-4">
@@ -619,7 +620,8 @@ export const Home = () => {
                 </div>
               </form>
             </motion.div>
-          </>
+          </div>,
+          document.body
         )}
       </AnimatePresence>
 

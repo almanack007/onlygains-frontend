@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../context/AppContext';
 import { Search, PlusCircle, X, Loader, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -113,8 +114,8 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
 
   return (
     <AnimatePresence>
-      {isOpen && (
-        <>
+      {isOpen && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
           {/* Backdrop */}
           <motion.div 
             initial={{ opacity: 0 }}
@@ -122,19 +123,17 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
             exit={{ opacity: 0 }}
             onClick={onClose}
             onTouchMove={(e) => e.stopPropagation()}
-            className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm touch-none"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm touch-none pointer-events-auto"
           />
 
-          {/* Bottom Sheet Modal */}
+          {/* Centered Modal */}
           <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className="fixed bottom-0 left-0 right-0 max-w-[500px] mx-auto bg-[#161616] border-t border-white/10 rounded-t-[32px] p-5 sm:p-6 z-50 overflow-y-auto overscroll-contain max-h-[90vh] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] text-left"
+            initial={{ scale: 0.94, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.94, opacity: 0 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+            className="relative bg-[#161616] border border-white/10 rounded-[28px] p-5 sm:p-6 z-50 overflow-y-auto overscroll-contain w-full max-w-[460px] max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-left pointer-events-auto"
           >
-            {/* Handlebar */}
-            <div className="w-12 h-1 bg-white/15 rounded-full mx-auto mb-4" />
 
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
@@ -315,7 +314,8 @@ export const ManualAddFoodModal = ({ isOpen, onClose }) => {
               </div>
             )}
           </motion.div>
-        </>
+        </div>,
+        document.body
       )}
     </AnimatePresence>
   );
