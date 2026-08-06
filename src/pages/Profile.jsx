@@ -406,7 +406,7 @@ export const Profile = () => {
             Log Out of Account
           </button>
         </div>
-      </div>>
+      </div>
 
       {/* Premium Subscription Checkout Dialog Modal */}
       {isBillingOpen && (
